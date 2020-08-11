@@ -5,10 +5,7 @@
  */
 package editor.sound;
 
-import editor.MainFrame;
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,8 +13,9 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
-import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
+
+import editor.MainFrame;
 import utils.LambdaUtils.VoidInterface;
 
 /**

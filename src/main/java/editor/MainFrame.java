@@ -1,26 +1,32 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package editor;
 
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.GroupLayout;
+import javax.swing.LayoutStyle;
+import javax.swing.border.*;
+import javax.swing.event.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
+import com.formdev.flatlaf.FlatDarculaLaf;
 import com.jogamp.opengl.GLContext;
 import editor.about.AboutDialog;
 import editor.animationeditor.AnimationEditorDialog;
 import editor.backsound.Backsound;
 import editor.backsound.BacksoundEditorDialog;
-import editor.exceptions.WrongFormatException;
-import editor.bdhc.Bdhc;
-import editor.bdhc.BdhcEditorDialog;
-import editor.bdhc.BdhcLoaderDP;
-import editor.bdhc.BdhcLoaderHGSS;
-import editor.bdhc.BdhcWriterDP;
-import editor.bdhc.BdhcWriterHGSS;
+import editor.bdhc.*;
+import editor.bordermap.*;
 import editor.buildingeditor.BuildingEditorDialog;
-import editor.buildingeditor2.BuildHandlerDPPt;
 import editor.buildingeditor2.BuildingEditorChooser;
-import editor.buildingeditor2.BuildingEditorDialogDPPt;
 import editor.buildingeditor2.buildfile.BuildFile;
 import editor.collisions.Collisions;
 import editor.collisions.CollisionsEditorDialog;
@@ -28,56 +34,29 @@ import editor.converter.ConverterDialog;
 import editor.converter.ConverterErrorDialog;
 import editor.converter.ExportNsbmdResultDialog;
 import editor.converter.ExportNsbtxResultDialog;
-import editor.dae.DaeReader;
+import editor.exceptions.WrongFormatException;
 import editor.game.Game;
 import editor.gameselector.GameChangerDialog;
 import editor.gameselector.GameSelectorDialog;
-import editor.gameselector.GameTsetSelectorDialog;
 import editor.gameselector.GameTsetSelectorDialog2;
 import editor.handler.MapEditorHandler;
 import editor.handler.MapGrid;
+import editor.heightselector.*;
 import editor.imd.ImdModel;
 import editor.keyboard.KeyboardInfoDialog;
-import editor.layerselector.ThumbnailLayerSelector;
-import editor.narc2.Narc;
-import editor.narc2.NarcIO;
+import editor.layerselector.*;
 import editor.nsbtx.NsbtxEditorDialog;
 import editor.nsbtx2.Nsbtx2;
 import editor.nsbtx2.NsbtxEditorDialog2;
 import editor.nsbtx2.NsbtxLoader2;
 import editor.obj.ExportMapObjDialog;
 import editor.obj.ObjWriter;
-import editor.smartdrawing.SmartGrid;
+import editor.smartdrawing.*;
 import editor.state.MapLayerState;
 import editor.state.StateHandler;
-import editor.tileseteditor.AddTileDialog;
-import editor.tileseteditor.ExportTileDialog;
-import editor.tileseteditor.TileDisplay;
-import editor.tileseteditor.TilesetEditorDialog;
-import java.awt.Color;
-import java.awt.Dimension;
-
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
+import editor.tileselector.*;
+import editor.tileseteditor.*;
+import net.miginfocom.swing.*;
 import tileset.NormalsNotFoundException;
 import tileset.TextureNotFoundException;
 import tileset.Tileset;
@@ -85,16 +64,37 @@ import tileset.TilesetIO;
 import utils.Utils;
 
 /**
- *
- * @author Trifindo
+ * @author Trifindo, JackHack96
  */
-public class MainFrame extends javax.swing.JFrame {
-
+public class MainFrame extends JFrame {
     MapEditorHandler handler;
 
-    /**
-     * Creates new form MainFrame
-     */
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(new FlatDarculaLaf());
+        } catch (Exception ex) {
+            System.err.println("Failed to initialize LaF");
+        }
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(() -> {
+            MainFrame mainFrame = new MainFrame();
+            mainFrame.setVisible(true);
+
+            if (args.length > 0) {
+                try {
+                    if (args[0].endsWith(MapGrid.fileExtension)) {
+                        mainFrame.openMap(args[0]);
+                    } else if (args[0].endsWith(Tileset.fileExtension)) {
+                        mainFrame.openTileset(args[0]);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
     public MainFrame() {
         initComponents();
 
@@ -138,1498 +138,101 @@ public class MainFrame extends javax.swing.JFrame {
         tileDisplay.setWireframe(true);
 
         setTitle(handler.getVersionName());
-
     }
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        jToolBar1 = new javax.swing.JToolBar();
-        jbNewMap = new javax.swing.JButton();
-        jbOpenMap = new javax.swing.JButton();
-        jbSaveMap = new javax.swing.JButton();
-        jbExportObj = new javax.swing.JButton();
-        jbExportImd = new javax.swing.JButton();
-        jbExportNsb = new javax.swing.JButton();
-        jbExportNsb1 = new javax.swing.JButton();
-        jSeparator4 = new javax.swing.JToolBar.Separator();
-        jbUndo = new javax.swing.JButton();
-        jbRedo = new javax.swing.JButton();
-        jSeparator11 = new javax.swing.JToolBar.Separator();
-        jb3DView = new javax.swing.JButton();
-        jbTopView = new javax.swing.JButton();
-        jbHeightView = new javax.swing.JButton();
-        jbGridView = new javax.swing.JButton();
-        jSeparator8 = new javax.swing.JToolBar.Separator();
-        jbClearTile = new javax.swing.JButton();
-        jbUseSmartGrid = new javax.swing.JButton();
-        jSeparator5 = new javax.swing.JToolBar.Separator();
-        jbTilelistEditor = new javax.swing.JButton();
-        jbCollisionsEditor = new javax.swing.JButton();
-        jbBdhcEditor = new javax.swing.JButton();
-        jbBacksoundEditor = new javax.swing.JButton();
-        jbNsbtxEditor1 = new javax.swing.JButton();
-        jbBuildingEditor = new javax.swing.JButton();
-        jbAnimationEditor = new javax.swing.JButton();
-        jSeparator7 = new javax.swing.JToolBar.Separator();
-        jbKeboardInfo = new javax.swing.JButton();
-        jbHelp = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tileSelector = new editor.tileselector.TileSelector();
-        jPanel2 = new javax.swing.JPanel();
-        heightSelector = new editor.heightselector.HeightSelector();
-        jPanel3 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        smartGridDisplay = new editor.smartdrawing.SmartGridDisplay();
-        jPanel5 = new javax.swing.JPanel();
-        thumbnailLayerSelector = new editor.layerselector.ThumbnailLayerSelector();
-        jlGameIcon = new javax.swing.JLabel();
-        jlGame = new javax.swing.JLabel();
-        jlGameName = new javax.swing.JLabel();
-        jPanel4 = new javax.swing.JPanel();
-        borderMapsDisplay = new editor.bordermap.BorderMapsDisplay();
-        jPanel6 = new javax.swing.JPanel();
-        jsHeightMapAlpha = new javax.swing.JSlider();
-        jPanel7 = new javax.swing.JPanel();
-        jbMoveMapUp = new javax.swing.JButton();
-        jbMoveMapDown = new javax.swing.JButton();
-        jbMoveMapLeft = new javax.swing.JButton();
-        jbMoveMapRight = new javax.swing.JButton();
-        jPanel8 = new javax.swing.JPanel();
-        jsBackImageAlpha = new javax.swing.JSlider();
-        jPanel9 = new javax.swing.JPanel();
-        tileDisplay = new editor.tileseteditor.TileDisplay();
-        mapDisplayContainer = new javax.swing.JPanel();
-        mapDisplay = new editor.MapDisplay();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jmiNewMap = new javax.swing.JMenuItem();
-        jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        jmiOpenMap = new javax.swing.JMenuItem();
-        jSeparator2 = new javax.swing.JPopupMenu.Separator();
-        jmiSaveMap = new javax.swing.JMenuItem();
-        jmiSaveMapAs = new javax.swing.JMenuItem();
-        jSeparator3 = new javax.swing.JPopupMenu.Separator();
-        jmiExportObjWithText = new javax.swing.JMenuItem();
-        jmiExportMapAsImd = new javax.swing.JMenuItem();
-        jmiExportMapAsNsb = new javax.swing.JMenuItem();
-        jmiExportMapBtx = new javax.swing.JMenuItem();
-        jSeparator6 = new javax.swing.JPopupMenu.Separator();
-        jmiImportTileset = new javax.swing.JMenuItem();
-        jmiExportTileset = new javax.swing.JMenuItem();
-        jmiExportAllTiles = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
-        jmiUndo = new javax.swing.JMenuItem();
-        jmiRedo = new javax.swing.JMenuItem();
-        jSeparator12 = new javax.swing.JPopupMenu.Separator();
-        jmiClearTiles = new javax.swing.JMenuItem();
-        jmiUseSmartDrawing = new javax.swing.JMenuItem();
-        jSeparator10 = new javax.swing.JPopupMenu.Separator();
-        jmiClearLayer = new javax.swing.JMenuItem();
-        jmiClearAllLayers = new javax.swing.JMenuItem();
-        jSeparator13 = new javax.swing.JPopupMenu.Separator();
-        jmiCopyLayer = new javax.swing.JMenuItem();
-        jmiPasteLayer = new javax.swing.JMenuItem();
-        jmiPasteLayerTiles = new javax.swing.JMenuItem();
-        jmiPasteLayerHeights = new javax.swing.JMenuItem();
-        jMenu3 = new javax.swing.JMenu();
-        jmi3dView = new javax.swing.JMenuItem();
-        jmiTopView = new javax.swing.JMenuItem();
-        jmiToggleHeightView = new javax.swing.JMenuItem();
-        jmiToggleGrid = new javax.swing.JMenuItem();
-        jSeparator9 = new javax.swing.JPopupMenu.Separator();
-        jmiLoadBackImg = new javax.swing.JMenuItem();
-        jcbUseBackImage = new javax.swing.JCheckBoxMenuItem();
-        jMenu4 = new javax.swing.JMenu();
-        jmiTilesetEditor = new javax.swing.JMenuItem();
-        jmiCollisionEditor = new javax.swing.JMenuItem();
-        jmiBdhcEditor = new javax.swing.JMenuItem();
-        jmiNsbtxEditor = new javax.swing.JMenuItem();
-        jmHelp = new javax.swing.JMenu();
-        jmiKeyboardInfo = new javax.swing.JMenuItem();
-        jmiAbout = new javax.swing.JMenuItem();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-        setTitle("Pokemon DS Map Studio 1.10");
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                formWindowClosing(evt);
-            }
-        });
-
-        jToolBar1.setFloatable(false);
-        jToolBar1.setRollover(true);
-        jToolBar1.setMargin(new java.awt.Insets(5, 8, 5, 8));
-        jToolBar1.setMaximumSize(new java.awt.Dimension(100, 34));
-        jToolBar1.setMinimumSize(new java.awt.Dimension(100, 34));
-        jToolBar1.setPreferredSize(new java.awt.Dimension(100, 34));
-
-        jbNewMap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/newMapIcon.png"))); // NOI18N
-        jbNewMap.setToolTipText("New Map");
-        jbNewMap.setBorderPainted(false);
-        jbNewMap.setFocusable(false);
-        jbNewMap.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbNewMap.setIconTextGap(0);
-        jbNewMap.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        jbNewMap.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbNewMap.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbNewMap.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbNewMap.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbNewMapActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbNewMap);
-
-        jbOpenMap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/openMapIcon.png"))); // NOI18N
-        jbOpenMap.setToolTipText("Open Map");
-        jbOpenMap.setFocusable(false);
-        jbOpenMap.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbOpenMap.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbOpenMap.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbOpenMap.setName(""); // NOI18N
-        jbOpenMap.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbOpenMap.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbOpenMap.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbOpenMapActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbOpenMap);
-
-        jbSaveMap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/saveMapIcon.png"))); // NOI18N
-        jbSaveMap.setToolTipText("Save Map");
-        jbSaveMap.setFocusable(false);
-        jbSaveMap.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbSaveMap.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbSaveMap.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbSaveMap.setName(""); // NOI18N
-        jbSaveMap.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbSaveMap.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbSaveMap.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbSaveMapActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbSaveMap);
-
-        jbExportObj.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/exportObjIcon.png"))); // NOI18N
-        jbExportObj.setToolTipText("Export Map as OBJ with Textures");
-        jbExportObj.setFocusable(false);
-        jbExportObj.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbExportObj.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbExportObj.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbExportObj.setName(""); // NOI18N
-        jbExportObj.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbExportObj.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbExportObj.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbExportObjActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbExportObj);
-
-        jbExportImd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/exportImdIcon.png"))); // NOI18N
-        jbExportImd.setToolTipText("Export Map as IMD");
-        jbExportImd.setFocusable(false);
-        jbExportImd.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbExportImd.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbExportImd.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbExportImd.setName(""); // NOI18N
-        jbExportImd.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbExportImd.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbExportImd.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbExportImdActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbExportImd);
-
-        jbExportNsb.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/exportNsbIcon.png"))); // NOI18N
-        jbExportNsb.setToolTipText("Export Map as NSBMD");
-        jbExportNsb.setFocusable(false);
-        jbExportNsb.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbExportNsb.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbExportNsb.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbExportNsb.setName(""); // NOI18N
-        jbExportNsb.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbExportNsb.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbExportNsb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbExportNsbActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbExportNsb);
-
-        jbExportNsb1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/exportBtxIcon.png"))); // NOI18N
-        jbExportNsb1.setToolTipText("Export Map NSBTX");
-        jbExportNsb1.setFocusable(false);
-        jbExportNsb1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbExportNsb1.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbExportNsb1.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbExportNsb1.setName(""); // NOI18N
-        jbExportNsb1.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbExportNsb1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbExportNsb1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbExportNsb1ActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbExportNsb1);
-        jToolBar1.add(jSeparator4);
-
-        jbUndo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/undoIcon.png"))); // NOI18N
-        jbUndo.setToolTipText("Undo (Ctrl+Z)");
-        jbUndo.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/undoDisabledIcon.png"))); // NOI18N
-        jbUndo.setEnabled(false);
-        jbUndo.setFocusable(false);
-        jbUndo.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbUndo.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbUndo.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbUndo.setName(""); // NOI18N
-        jbUndo.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbUndo.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbUndo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbUndoActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbUndo);
-
-        jbRedo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/redoIcon.png"))); // NOI18N
-        jbRedo.setToolTipText("Redo (Ctrl+Y)");
-        jbRedo.setDisabledIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/redoDisabledIcon.png"))); // NOI18N
-        jbRedo.setEnabled(false);
-        jbRedo.setFocusable(false);
-        jbRedo.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbRedo.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbRedo.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbRedo.setName(""); // NOI18N
-        jbRedo.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbRedo.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbRedo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbRedoActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbRedo);
-        jToolBar1.add(jSeparator11);
-
-        jb3DView.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/3DViewIcon.png"))); // NOI18N
-        jb3DView.setToolTipText("3D View");
-        jb3DView.setFocusable(false);
-        jb3DView.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jb3DView.setMaximumSize(new java.awt.Dimension(38, 38));
-        jb3DView.setMinimumSize(new java.awt.Dimension(38, 38));
-        jb3DView.setName(""); // NOI18N
-        jb3DView.setPreferredSize(new java.awt.Dimension(38, 38));
-        jb3DView.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jb3DView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jb3DViewActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jb3DView);
-
-        jbTopView.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/topViewIcon.png"))); // NOI18N
-        jbTopView.setToolTipText("Ortho View");
-        jbTopView.setFocusable(false);
-        jbTopView.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbTopView.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbTopView.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbTopView.setName(""); // NOI18N
-        jbTopView.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbTopView.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbTopView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbTopViewActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbTopView);
-
-        jbHeightView.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/heightViewIcon.png"))); // NOI18N
-        jbHeightView.setToolTipText("Height View");
-        jbHeightView.setFocusable(false);
-        jbHeightView.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbHeightView.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbHeightView.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbHeightView.setName(""); // NOI18N
-        jbHeightView.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbHeightView.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbHeightView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbHeightViewActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbHeightView);
-
-        jbGridView.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/gridViewIcon.png"))); // NOI18N
-        jbGridView.setToolTipText("View 3D Grid");
-        jbGridView.setFocusable(false);
-        jbGridView.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbGridView.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbGridView.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbGridView.setName(""); // NOI18N
-        jbGridView.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbGridView.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbGridView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbGridViewActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbGridView);
-        jToolBar1.add(jSeparator8);
-
-        jbClearTile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cursors/clearTileCursor.png"))); // NOI18N
-        jbClearTile.setToolTipText("Clear Tile");
-        jbClearTile.setFocusable(false);
-        jbClearTile.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbClearTile.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbClearTile.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbClearTile.setName(""); // NOI18N
-        jbClearTile.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbClearTile.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbClearTile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbClearTileActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbClearTile);
-
-        jbUseSmartGrid.setIcon(new javax.swing.ImageIcon(getClass().getResource("/cursors/smartGridCursor.png"))); // NOI18N
-        jbUseSmartGrid.setToolTipText("Use Smart Drawing");
-        jbUseSmartGrid.setFocusable(false);
-        jbUseSmartGrid.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbUseSmartGrid.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbUseSmartGrid.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbUseSmartGrid.setName(""); // NOI18N
-        jbUseSmartGrid.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbUseSmartGrid.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbUseSmartGrid.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbUseSmartGridActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbUseSmartGrid);
-        jToolBar1.add(jSeparator5);
-
-        jbTilelistEditor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/tilelistEditorIcon.png"))); // NOI18N
-        jbTilelistEditor.setToolTipText("Tile List Editor");
-        jbTilelistEditor.setFocusable(false);
-        jbTilelistEditor.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbTilelistEditor.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbTilelistEditor.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbTilelistEditor.setName(""); // NOI18N
-        jbTilelistEditor.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbTilelistEditor.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbTilelistEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbTilelistEditorActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbTilelistEditor);
-
-        jbCollisionsEditor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/collisionEditorIcon.png"))); // NOI18N
-        jbCollisionsEditor.setToolTipText("Collisions Editor");
-        jbCollisionsEditor.setFocusable(false);
-        jbCollisionsEditor.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbCollisionsEditor.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbCollisionsEditor.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbCollisionsEditor.setName(""); // NOI18N
-        jbCollisionsEditor.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbCollisionsEditor.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbCollisionsEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbCollisionsEditorActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbCollisionsEditor);
-
-        jbBdhcEditor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/bdhcEditorIcon.png"))); // NOI18N
-        jbBdhcEditor.setToolTipText("BDHC Editor");
-        jbBdhcEditor.setFocusable(false);
-        jbBdhcEditor.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbBdhcEditor.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbBdhcEditor.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbBdhcEditor.setName(""); // NOI18N
-        jbBdhcEditor.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbBdhcEditor.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbBdhcEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbBdhcEditorActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbBdhcEditor);
-
-        jbBacksoundEditor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/backsoundEditorIcon.png"))); // NOI18N
-        jbBacksoundEditor.setToolTipText("Backsound Editor");
-        jbBacksoundEditor.setFocusable(false);
-        jbBacksoundEditor.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbBacksoundEditor.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbBacksoundEditor.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbBacksoundEditor.setName(""); // NOI18N
-        jbBacksoundEditor.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbBacksoundEditor.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbBacksoundEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbBacksoundEditorActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbBacksoundEditor);
-
-        jbNsbtxEditor1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/nsbtxEditorIcon.png"))); // NOI18N
-        jbNsbtxEditor1.setToolTipText("NSBTX Editor");
-        jbNsbtxEditor1.setFocusable(false);
-        jbNsbtxEditor1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbNsbtxEditor1.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbNsbtxEditor1.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbNsbtxEditor1.setName(""); // NOI18N
-        jbNsbtxEditor1.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbNsbtxEditor1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbNsbtxEditor1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbNsbtxEditor1ActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbNsbtxEditor1);
-
-        jbBuildingEditor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/buildingEditorIcon.png"))); // NOI18N
-        jbBuildingEditor.setToolTipText("Building Editor");
-        jbBuildingEditor.setFocusable(false);
-        jbBuildingEditor.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbBuildingEditor.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbBuildingEditor.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbBuildingEditor.setName(""); // NOI18N
-        jbBuildingEditor.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbBuildingEditor.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbBuildingEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbBuildingEditorActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbBuildingEditor);
-
-        jbAnimationEditor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/animationEditorIcon.png"))); // NOI18N
-        jbAnimationEditor.setToolTipText("Animation editor");
-        jbAnimationEditor.setFocusable(false);
-        jbAnimationEditor.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbAnimationEditor.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbAnimationEditor.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbAnimationEditor.setName(""); // NOI18N
-        jbAnimationEditor.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbAnimationEditor.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbAnimationEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbAnimationEditorActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbAnimationEditor);
-        jToolBar1.add(jSeparator7);
-
-        jbKeboardInfo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/keyboardInfoIcon.png"))); // NOI18N
-        jbKeboardInfo.setToolTipText("Keyboard Shortcuts");
-        jbKeboardInfo.setFocusable(false);
-        jbKeboardInfo.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbKeboardInfo.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbKeboardInfo.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbKeboardInfo.setName(""); // NOI18N
-        jbKeboardInfo.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbKeboardInfo.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbKeboardInfo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbKeboardInfoActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbKeboardInfo);
-
-        jbHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/helpIcon.png"))); // NOI18N
-        jbHelp.setToolTipText("Help");
-        jbHelp.setFocusable(false);
-        jbHelp.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jbHelp.setMaximumSize(new java.awt.Dimension(38, 38));
-        jbHelp.setMinimumSize(new java.awt.Dimension(38, 38));
-        jbHelp.setName(""); // NOI18N
-        jbHelp.setPreferredSize(new java.awt.Dimension(38, 38));
-        jbHelp.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jbHelp.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbHelpActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(jbHelp);
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Tile List", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP));
-
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-        tileSelector.setPreferredSize(new java.awt.Dimension(128, 0));
-        tileSelector.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                tileSelectorMousePressed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout tileSelectorLayout = new javax.swing.GroupLayout(tileSelector);
-        tileSelector.setLayout(tileSelectorLayout);
-        tileSelectorLayout.setHorizontalGroup(
-            tileSelectorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 128, Short.MAX_VALUE)
-        );
-        tileSelectorLayout.setVerticalGroup(
-            tileSelectorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 517, Short.MAX_VALUE)
-        );
-
-        jScrollPane1.setViewportView(tileSelector);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane1)
-                .addGap(0, 0, 0))
-        );
-
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Z", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.ABOVE_TOP, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 255))); // NOI18N
-
-        heightSelector.setPreferredSize(new java.awt.Dimension(16, 496));
-
-        javax.swing.GroupLayout heightSelectorLayout = new javax.swing.GroupLayout(heightSelector);
-        heightSelector.setLayout(heightSelectorLayout);
-        heightSelectorLayout.setHorizontalGroup(
-            heightSelectorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 16, Short.MAX_VALUE)
-        );
-        heightSelectorLayout.setVerticalGroup(
-            heightSelectorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 496, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(heightSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(heightSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Smart Drawing", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP));
-
-        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane2.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-        javax.swing.GroupLayout smartGridDisplayLayout = new javax.swing.GroupLayout(smartGridDisplay);
-        smartGridDisplay.setLayout(smartGridDisplayLayout);
-        smartGridDisplayLayout.setHorizontalGroup(
-            smartGridDisplayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 80, Short.MAX_VALUE)
-        );
-        smartGridDisplayLayout.setVerticalGroup(
-            smartGridDisplayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 517, Short.MAX_VALUE)
-        );
-
-        jScrollPane2.setViewportView(smartGridDisplay);
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2)
-        );
-
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Layer", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.ABOVE_TOP, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(204, 102, 0))); // NOI18N
-
-        javax.swing.GroupLayout thumbnailLayerSelectorLayout = new javax.swing.GroupLayout(thumbnailLayerSelector);
-        thumbnailLayerSelector.setLayout(thumbnailLayerSelectorLayout);
-        thumbnailLayerSelectorLayout.setHorizontalGroup(
-            thumbnailLayerSelectorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 64, Short.MAX_VALUE)
-        );
-        thumbnailLayerSelectorLayout.setVerticalGroup(
-            thumbnailLayerSelectorLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 512, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addComponent(thumbnailLayerSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(thumbnailLayerSelector, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-
-        jlGameIcon.setText(" ");
-        jlGameIcon.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        jlGameIcon.setMaximumSize(new java.awt.Dimension(32, 32));
-        jlGameIcon.setMinimumSize(new java.awt.Dimension(32, 32));
-        jlGameIcon.setPreferredSize(new java.awt.Dimension(32, 32));
-        jlGameIcon.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                jlGameIconMousePressed(evt);
-            }
-        });
-
-        jlGame.setText("Map for: ");
-
-        jlGameName.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-        jlGameName.setText("Game Name");
-
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Border Maps", javax.swing.border.TitledBorder.LEFT, javax.swing.border.TitledBorder.ABOVE_TOP));
-
-        javax.swing.GroupLayout borderMapsDisplayLayout = new javax.swing.GroupLayout(borderMapsDisplay);
-        borderMapsDisplay.setLayout(borderMapsDisplayLayout);
-        borderMapsDisplayLayout.setHorizontalGroup(
-            borderMapsDisplayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 96, Short.MAX_VALUE)
-        );
-        borderMapsDisplayLayout.setVerticalGroup(
-            borderMapsDisplayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 96, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(borderMapsDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(borderMapsDisplay, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-
-        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Height Map Alpha", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP));
-
-        jsHeightMapAlpha.setValue(99);
-        jsHeightMapAlpha.setFocusable(false);
-        jsHeightMapAlpha.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                jsHeightMapAlphaStateChanged(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
-        jPanel6.setLayout(jPanel6Layout);
-        jPanel6Layout.setHorizontalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jsHeightMapAlpha, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-        );
-        jPanel6Layout.setVerticalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jsHeightMapAlpha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-
-        jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Move Layer", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP));
-
-        jbMoveMapUp.setText("▲");
-        jbMoveMapUp.setFocusable(false);
-        jbMoveMapUp.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbMoveMapUpActionPerformed(evt);
-            }
-        });
-
-        jbMoveMapDown.setText("▼");
-        jbMoveMapDown.setFocusable(false);
-        jbMoveMapDown.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbMoveMapDownActionPerformed(evt);
-            }
-        });
-
-        jbMoveMapLeft.setText("◄");
-        jbMoveMapLeft.setFocusable(false);
-        jbMoveMapLeft.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbMoveMapLeftActionPerformed(evt);
-            }
-        });
-
-        jbMoveMapRight.setText("►");
-        jbMoveMapRight.setFocusable(false);
-        jbMoveMapRight.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jbMoveMapRightActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
-        jPanel7.setLayout(jPanel7Layout);
-        jPanel7Layout.setHorizontalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jbMoveMapUp, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanel7Layout.createSequentialGroup()
-                .addComponent(jbMoveMapLeft)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jbMoveMapRight))
-            .addComponent(jbMoveMapDown, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        jPanel7Layout.setVerticalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel7Layout.createSequentialGroup()
-                .addComponent(jbMoveMapUp)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jbMoveMapLeft)
-                    .addComponent(jbMoveMapRight))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jbMoveMapDown))
-        );
-
-        jPanel8.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Back Image Alpha", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP));
-
-        jsBackImageAlpha.setFocusable(false);
-        jsBackImageAlpha.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                jsBackImageAlphaStateChanged(evt);
-            }
-        });
-
-        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
-        jPanel8.setLayout(jPanel8Layout);
-        jPanel8Layout.setHorizontalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jsBackImageAlpha, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
-        );
-        jPanel8Layout.setVerticalGroup(
-            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jsBackImageAlpha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-
-        jPanel9.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Tile Selected", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.ABOVE_TOP));
-
-        tileDisplay.setFocusable(false);
-        tileDisplay.setPreferredSize(new java.awt.Dimension(140, 140));
-
-        javax.swing.GroupLayout tileDisplayLayout = new javax.swing.GroupLayout(tileDisplay);
-        tileDisplay.setLayout(tileDisplayLayout);
-        tileDisplayLayout.setHorizontalGroup(
-            tileDisplayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 140, Short.MAX_VALUE)
-        );
-        tileDisplayLayout.setVerticalGroup(
-            tileDisplayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
-        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
-        jPanel9.setLayout(jPanel9Layout);
-        jPanel9Layout.setHorizontalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tileDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        jPanel9Layout.setVerticalGroup(
-            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tileDisplay, javax.swing.GroupLayout.DEFAULT_SIZE, 142, Short.MAX_VALUE)
-        );
-
-        mapDisplayContainer.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                mapDisplayContainerComponentResized(evt);
-            }
-        });
-        mapDisplayContainer.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
-
-        mapDisplay.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
-        mapDisplay.setMaximumSize(new java.awt.Dimension(544, 544));
-
-        javax.swing.GroupLayout mapDisplayLayout = new javax.swing.GroupLayout(mapDisplay);
-        mapDisplay.setLayout(mapDisplayLayout);
-        mapDisplayLayout.setHorizontalGroup(
-            mapDisplayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 542, Short.MAX_VALUE)
-        );
-        mapDisplayLayout.setVerticalGroup(
-            mapDisplayLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 542, Short.MAX_VALUE)
-        );
-
-        mapDisplayContainer.add(mapDisplay);
-
-        jMenu1.setText("File");
-
-        jmiNewMap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/newMapIcon_s.png"))); // NOI18N
-        jmiNewMap.setText("New Map...");
-        jmiNewMap.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiNewMapActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiNewMap);
-        jMenu1.add(jSeparator1);
-
-        jmiOpenMap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/openMapIcon_s.png"))); // NOI18N
-        jmiOpenMap.setText("Open Map...");
-        jmiOpenMap.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiOpenMapActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiOpenMap);
-        jMenu1.add(jSeparator2);
-
-        jmiSaveMap.setText("Save Map...");
-        jmiSaveMap.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiSaveMapActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiSaveMap);
-
-        jmiSaveMapAs.setText("Save Map as...");
-        jmiSaveMapAs.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiSaveMapAsActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiSaveMapAs);
-        jMenu1.add(jSeparator3);
-
-        jmiExportObjWithText.setText("Export Map as OBJ with textures...");
-        jmiExportObjWithText.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiExportObjWithTextActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiExportObjWithText);
-
-        jmiExportMapAsImd.setText("Export Map as IMD...");
-        jmiExportMapAsImd.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiExportMapAsImdActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiExportMapAsImd);
-
-        jmiExportMapAsNsb.setText("Export Map as NSBMD...");
-        jmiExportMapAsNsb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiExportMapAsNsbActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiExportMapAsNsb);
-
-        jmiExportMapBtx.setText("Export Map's NSBTX...");
-        jmiExportMapBtx.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiExportMapBtxActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiExportMapBtx);
-        jMenu1.add(jSeparator6);
-
-        jmiImportTileset.setText("Import Tileset...");
-        jmiImportTileset.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiImportTilesetActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiImportTileset);
-
-        jmiExportTileset.setText("Export Tileset...");
-        jmiExportTileset.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiExportTilesetActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiExportTileset);
-
-        jmiExportAllTiles.setText("Export All Tiles as OBJ...");
-        jmiExportAllTiles.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiExportAllTilesActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jmiExportAllTiles);
-
-        jMenuBar1.add(jMenu1);
-
-        jMenu2.setText("Edit");
-
-        jmiUndo.setText("Undo");
-        jmiUndo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiUndoActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jmiUndo);
-
-        jmiRedo.setText("Redo");
-        jmiRedo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiRedoActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jmiRedo);
-        jMenu2.add(jSeparator12);
-
-        jmiClearTiles.setText("Clear Tiles");
-        jmiClearTiles.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiClearTilesActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jmiClearTiles);
-
-        jmiUseSmartDrawing.setText("Use Smart Drawing");
-        jmiUseSmartDrawing.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiUseSmartDrawingActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jmiUseSmartDrawing);
-        jMenu2.add(jSeparator10);
-
-        jmiClearLayer.setText("Clear Layer");
-        jmiClearLayer.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiClearLayerActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jmiClearLayer);
-
-        jmiClearAllLayers.setText("Clear All Layers");
-        jmiClearAllLayers.setEnabled(false);
-        jmiClearAllLayers.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiClearAllLayersActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jmiClearAllLayers);
-        jMenu2.add(jSeparator13);
-
-        jmiCopyLayer.setText("Copy Layer");
-        jmiCopyLayer.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiCopyLayerActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jmiCopyLayer);
-
-        jmiPasteLayer.setText("Paste Layer");
-        jmiPasteLayer.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiPasteLayerActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jmiPasteLayer);
-
-        jmiPasteLayerTiles.setText("Paste Layer Tiles");
-        jmiPasteLayerTiles.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiPasteLayerTilesActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jmiPasteLayerTiles);
-
-        jmiPasteLayerHeights.setText("Paste Layer Heights");
-        jmiPasteLayerHeights.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiPasteLayerHeightsActionPerformed(evt);
-            }
-        });
-        jMenu2.add(jmiPasteLayerHeights);
-
-        jMenuBar1.add(jMenu2);
-
-        jMenu3.setText("View");
-
-        jmi3dView.setText("3D View");
-        jmi3dView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmi3dViewActionPerformed(evt);
-            }
-        });
-        jMenu3.add(jmi3dView);
-
-        jmiTopView.setText("Top View");
-        jmiTopView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiTopViewActionPerformed(evt);
-            }
-        });
-        jMenu3.add(jmiTopView);
-
-        jmiToggleHeightView.setText("Toggle Height View");
-        jmiToggleHeightView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiToggleHeightViewActionPerformed(evt);
-            }
-        });
-        jMenu3.add(jmiToggleHeightView);
-
-        jmiToggleGrid.setText("Toggle Grid");
-        jmiToggleGrid.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiToggleGridActionPerformed(evt);
-            }
-        });
-        jMenu3.add(jmiToggleGrid);
-        jMenu3.add(jSeparator9);
-
-        jmiLoadBackImg.setText("Open Background Image");
-        jmiLoadBackImg.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiLoadBackImgActionPerformed(evt);
-            }
-        });
-        jMenu3.add(jmiLoadBackImg);
-
-        jcbUseBackImage.setText("Use Background Image");
-        jcbUseBackImage.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jcbUseBackImageActionPerformed(evt);
-            }
-        });
-        jMenu3.add(jcbUseBackImage);
-
-        jMenuBar1.add(jMenu3);
-
-        jMenu4.setText("Tools");
-
-        jmiTilesetEditor.setText("Tileset Editor");
-        jmiTilesetEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiTilesetEditorActionPerformed(evt);
-            }
-        });
-        jMenu4.add(jmiTilesetEditor);
-
-        jmiCollisionEditor.setText("Collision Editor");
-        jmiCollisionEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiCollisionEditorActionPerformed(evt);
-            }
-        });
-        jMenu4.add(jmiCollisionEditor);
-
-        jmiBdhcEditor.setText("BDHC Editor");
-        jmiBdhcEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiBdhcEditorActionPerformed(evt);
-            }
-        });
-        jMenu4.add(jmiBdhcEditor);
-
-        jmiNsbtxEditor.setText("NSBTX Editor");
-        jmiNsbtxEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiNsbtxEditorActionPerformed(evt);
-            }
-        });
-        jMenu4.add(jmiNsbtxEditor);
-
-        jMenuBar1.add(jMenu4);
-
-        jmHelp.setText("Help");
-
-        jmiKeyboardInfo.setText("Keyboard Shortcuts");
-        jmiKeyboardInfo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiKeyboardInfoActionPerformed(evt);
-            }
-        });
-        jmHelp.add(jmiKeyboardInfo);
-
-        jmiAbout.setText("About");
-        jmiAbout.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jmiAboutActionPerformed(evt);
-            }
-        });
-        jmHelp.add(jmiAbout);
-
-        jMenuBar1.add(jmHelp);
-
-        setJMenuBar(jMenuBar1);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(mapDisplayContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 981, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jlGameName, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jlGame))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jlGameIcon, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jlGameIcon, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jlGame)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jlGameName)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(mapDisplayContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void jmiNewMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiNewMapActionPerformed
-        newMap();
-    }//GEN-LAST:event_jmiNewMapActionPerformed
-
-    private void jmiOpenMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiOpenMapActionPerformed
-        openMapWithDialog();
-    }//GEN-LAST:event_jmiOpenMapActionPerformed
-
-    private void jmiSaveMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiSaveMapActionPerformed
-        if (handler.getGrid().filePath.isEmpty()) {
-            saveMapWithDialog();
-        } else {
-            saveMap();
-        }
-    }//GEN-LAST:event_jmiSaveMapActionPerformed
-
-    private void jmiSaveMapAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiSaveMapAsActionPerformed
-        saveMapWithDialog();
-    }//GEN-LAST:event_jmiSaveMapAsActionPerformed
-
-    private void jmiTilesetEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiTilesetEditorActionPerformed
-        openTilesetEditor();
-    }//GEN-LAST:event_jmiTilesetEditorActionPerformed
-
-    private void jmiExportObjWithTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiExportObjWithTextActionPerformed
-        saveMapAsObjWithDialog(true);
-    }//GEN-LAST:event_jmiExportObjWithTextActionPerformed
-
-    private void jbOpenMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbOpenMapActionPerformed
-        openMapWithDialog();
-    }//GEN-LAST:event_jbOpenMapActionPerformed
-
-    private void jbNewMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbNewMapActionPerformed
-        newMap();
-    }//GEN-LAST:event_jbNewMapActionPerformed
-
-    private void jbSaveMapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSaveMapActionPerformed
-        if (handler.getGrid().filePath.isEmpty()) {
-            saveMapWithDialog();
-        } else {
-            saveMap();
-        }
-    }//GEN-LAST:event_jbSaveMapActionPerformed
-
-    private void jb3DViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jb3DViewActionPerformed
-        mapDisplay.set3DView();
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jb3DViewActionPerformed
-
-    private void jbTopViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbTopViewActionPerformed
-        mapDisplay.setOrthoView();
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jbTopViewActionPerformed
-
-    private void jbHeightViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbHeightViewActionPerformed
-        mapDisplay.toggleHeightView();
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jbHeightViewActionPerformed
-
-    private void jbGridViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbGridViewActionPerformed
-        mapDisplay.toggleGridView();
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jbGridViewActionPerformed
-
-    private void jbExportObjActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbExportObjActionPerformed
-        saveMapAsObjWithDialog(true);
-    }//GEN-LAST:event_jbExportObjActionPerformed
-
-    private void jbExportImdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbExportImdActionPerformed
-        saveMapAsImdWithDialog();
-    }//GEN-LAST:event_jbExportImdActionPerformed
-
-    private void jbHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbHelpActionPerformed
-        openAboutDialog();//TODO move this to another button
-    }//GEN-LAST:event_jbHelpActionPerformed
-
-    private void jmiImportTilesetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiImportTilesetActionPerformed
-        openTilesetWithDialog();
-    }//GEN-LAST:event_jmiImportTilesetActionPerformed
-
-    private void jbExportNsbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbExportNsbActionPerformed
-        saveMapAsNsbWithDialog();
-    }//GEN-LAST:event_jbExportNsbActionPerformed
-
-    private void jbTilelistEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbTilelistEditorActionPerformed
-        openTilesetEditor();
-    }//GEN-LAST:event_jbTilelistEditorActionPerformed
-
-    private void jbBdhcEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbBdhcEditorActionPerformed
-        openBdhcEditor();
-    }//GEN-LAST:event_jbBdhcEditorActionPerformed
-
-    private void jbCollisionsEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbCollisionsEditorActionPerformed
-        openCollisionsEditor();
-    }//GEN-LAST:event_jbCollisionsEditorActionPerformed
-
-    private void jbKeboardInfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbKeboardInfoActionPerformed
-        openKeyboardInfoDialog();
-    }//GEN-LAST:event_jbKeboardInfoActionPerformed
-
-    private void jmiExportTilesetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiExportTilesetActionPerformed
-        saveTilesetWithDialog();
-    }//GEN-LAST:event_jmiExportTilesetActionPerformed
-
-    private void jbUseSmartGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbUseSmartGridActionPerformed
-        mapDisplay.toggleSmartGrid();
-    }//GEN-LAST:event_jbUseSmartGridActionPerformed
-
-    private void jbClearTileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbClearTileActionPerformed
-        mapDisplay.toggleClearTile();
-    }//GEN-LAST:event_jbClearTileActionPerformed
-
-    private void jmiClearTilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiClearTilesActionPerformed
-        mapDisplay.toggleClearTile();
-    }//GEN-LAST:event_jmiClearTilesActionPerformed
-
-    private void jmi3dViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmi3dViewActionPerformed
-        mapDisplay.set3DView();
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jmi3dViewActionPerformed
-
-    private void jmiTopViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiTopViewActionPerformed
-        mapDisplay.setOrthoView();
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jmiTopViewActionPerformed
-
-    private void jmiToggleHeightViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiToggleHeightViewActionPerformed
-        mapDisplay.toggleHeightView();
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jmiToggleHeightViewActionPerformed
-
-    private void jmiToggleGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiToggleGridActionPerformed
-        mapDisplay.toggleGridView();
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jmiToggleGridActionPerformed
-
-    private void jmiCollisionEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiCollisionEditorActionPerformed
-        openCollisionsEditor();
-    }//GEN-LAST:event_jmiCollisionEditorActionPerformed
-
-    private void jmiBdhcEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiBdhcEditorActionPerformed
-        openBdhcEditor();
-    }//GEN-LAST:event_jmiBdhcEditorActionPerformed
-
-    private void jmiNsbtxEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiNsbtxEditorActionPerformed
-        openNsbtxEditor();
-    }//GEN-LAST:event_jmiNsbtxEditorActionPerformed
-
-    private void jmiKeyboardInfoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiKeyboardInfoActionPerformed
-        openKeyboardInfoDialog();
-    }//GEN-LAST:event_jmiKeyboardInfoActionPerformed
-
-    private void jmiAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiAboutActionPerformed
-        openAboutDialog();
-    }//GEN-LAST:event_jmiAboutActionPerformed
-
-    private void jmiUseSmartDrawingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiUseSmartDrawingActionPerformed
-        mapDisplay.toggleSmartGrid();
-    }//GEN-LAST:event_jmiUseSmartDrawingActionPerformed
-
-    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+    private void formWindowClosing(WindowEvent e) {
         int returnVal = JOptionPane.showConfirmDialog(this,
                 "Do you want to exit Pokemon DS Map Studio?",
                 "Closing Pokemon DS Map Studio", JOptionPane.YES_NO_OPTION);
         if (returnVal == JOptionPane.YES_OPTION) {
             System.exit(0);
         }
-    }//GEN-LAST:event_formWindowClosing
+    }
 
-    private void jcbUseBackImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jcbUseBackImageActionPerformed
-        mapDisplay.setBackImageEnabled(jcbUseBackImage.isSelected());
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jcbUseBackImageActionPerformed
+    private void jmiNewMapActionPerformed(ActionEvent e) {
+        newMap();
+    }
 
-    private void jmiLoadBackImgActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiLoadBackImgActionPerformed
-        openBackImgWithDialog();
-    }//GEN-LAST:event_jmiLoadBackImgActionPerformed
+    private void jmiOpenMapActionPerformed(ActionEvent e) {
+        openMapWithDialog();
+    }
 
-    private void jmiClearLayerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiClearLayerActionPerformed
+    private void jmiSaveMapActionPerformed(ActionEvent e) {
+        if (handler.getGrid().filePath.isEmpty())
+            saveMapWithDialog();
+        else
+            saveMap();
+    }
+
+    private void jmiSaveMapAsActionPerformed(ActionEvent e) {
+        saveMapWithDialog();
+    }
+
+    private void jmiExportObjWithTextActionPerformed(ActionEvent e) {
+        saveMapAsObjWithDialog();
+    }
+
+    private void jmiExportMapAsImdActionPerformed(ActionEvent e) {
+        saveMapAsImdWithDialog();
+    }
+
+    private void jmiExportMapAsNsbActionPerformed(ActionEvent e) {
+        saveMapAsNsbWithDialog();
+    }
+
+    private void jmiExportMapBtxActionPerformed(ActionEvent e) {
+        saveMapBtxWithDialog();
+    }
+
+    private void jmiImportTilesetActionPerformed(ActionEvent e) {
+        openTilesetWithDialog();
+    }
+
+    private void jmiExportTilesetActionPerformed(ActionEvent e) {
+        saveTilesetWithDialog();
+    }
+
+    private void jmiExportAllTilesActionPerformed(ActionEvent e) {
+        saveAllTilesAsObjWithDialog();
+    }
+
+    private void jmiUndoActionPerformed(ActionEvent e) {
+        undoMapState();
+    }
+
+    private void jmiRedoActionPerformed(ActionEvent e) {
+        redoMapState();
+    }
+
+    private void jmiClearTilesActionPerformed(ActionEvent e) {
+        mapDisplay.toggleClearTile();
+    }
+
+    private void jmiUseSmartDrawingActionPerformed(ActionEvent e) {
+        mapDisplay.toggleSmartGrid();
+    }
+
+    private void jmiClearLayerActionPerformed(ActionEvent e) {
         handler.addMapState(new MapLayerState("Clear Layer", handler));
         handler.getGrid().clearLayer(handler.getActiveLayerIndex());
         thumbnailLayerSelector.drawLayerThumbnail(handler.getActiveLayerIndex());
         thumbnailLayerSelector.repaint();
         mapDisplay.repaint();
-    }//GEN-LAST:event_jmiClearLayerActionPerformed
+    }
 
-    private void jmiClearAllLayersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiClearAllLayersActionPerformed
+    private void jmiClearAllLayersActionPerformed(ActionEvent e) {
         handler.getGrid().clearAllLayers();
         thumbnailLayerSelector.drawAllLayerThumbnails();
         thumbnailLayerSelector.repaint();
         mapDisplay.repaint();
-    }//GEN-LAST:event_jmiClearAllLayersActionPerformed
+    }
 
-    private void jbRedoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbRedoActionPerformed
-        redoMapState();
-    }//GEN-LAST:event_jbRedoActionPerformed
-
-    private void jbUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbUndoActionPerformed
-        undoMapState();
-    }//GEN-LAST:event_jbUndoActionPerformed
-
-    private void jbExportNsb1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbExportNsb1ActionPerformed
-        saveMapBtxWithDialog();
-    }//GEN-LAST:event_jbExportNsb1ActionPerformed
-
-    private void jmiExportMapAsImdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiExportMapAsImdActionPerformed
-        saveMapAsImdWithDialog();
-    }//GEN-LAST:event_jmiExportMapAsImdActionPerformed
-
-    private void jmiExportMapAsNsbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiExportMapAsNsbActionPerformed
-        saveMapAsNsbWithDialog();
-    }//GEN-LAST:event_jmiExportMapAsNsbActionPerformed
-
-    private void jmiExportMapBtxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiExportMapBtxActionPerformed
-        saveMapBtxWithDialog();
-    }//GEN-LAST:event_jmiExportMapBtxActionPerformed
-
-    private void jmiUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiUndoActionPerformed
-        undoMapState();
-    }//GEN-LAST:event_jmiUndoActionPerformed
-
-    private void jmiRedoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiRedoActionPerformed
-        redoMapState();
-    }//GEN-LAST:event_jmiRedoActionPerformed
-
-    private void jmiExportAllTilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiExportAllTilesActionPerformed
-        saveAllTilesAsObjWithDialog();
-
-    }//GEN-LAST:event_jmiExportAllTilesActionPerformed
-
-    private void jlGameIconMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jlGameIconMousePressed
-        changeGame();
-    }//GEN-LAST:event_jlGameIconMousePressed
-
-    private void jsHeightMapAlphaStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jsHeightMapAlphaStateChanged
-        mapDisplay.setHeightMapAlpha(jsHeightMapAlpha.getValue() / 100f);
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jsHeightMapAlphaStateChanged
-
-    private void jbBuildingEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbBuildingEditorActionPerformed
-        openBuildingEditor2();
-    }//GEN-LAST:event_jbBuildingEditorActionPerformed
-
-    private void jbNsbtxEditor1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbNsbtxEditor1ActionPerformed
-        openNsbtxEditor2();
-    }//GEN-LAST:event_jbNsbtxEditor1ActionPerformed
-
-    private void jbAnimationEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbAnimationEditorActionPerformed
-        openAnimationEditor();
-    }//GEN-LAST:event_jbAnimationEditorActionPerformed
-
-    private void jbMoveMapUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbMoveMapUpActionPerformed
-        moveTilesUp();
-    }//GEN-LAST:event_jbMoveMapUpActionPerformed
-
-    private void jbMoveMapDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbMoveMapDownActionPerformed
-        moveTilesDown();
-    }//GEN-LAST:event_jbMoveMapDownActionPerformed
-
-    private void jbMoveMapLeftActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbMoveMapLeftActionPerformed
-        moveTilesLeft();
-    }//GEN-LAST:event_jbMoveMapLeftActionPerformed
-
-    private void jbMoveMapRightActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbMoveMapRightActionPerformed
-        moveTilesRight();
-    }//GEN-LAST:event_jbMoveMapRightActionPerformed
-
-    private void jsBackImageAlphaStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jsBackImageAlphaStateChanged
-        mapDisplay.setBackImageAlpha(jsBackImageAlpha.getValue() / 100f);
-        mapDisplay.repaint();
-    }//GEN-LAST:event_jsBackImageAlphaStateChanged
-
-    private void tileSelectorMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tileSelectorMousePressed
-        repaintTileDisplay();
-    }//GEN-LAST:event_tileSelectorMousePressed
-
-    private void jmiCopyLayerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiCopyLayerActionPerformed
-        if (handler.getTileset().size() > 0) {
+    private void jmiCopyLayerActionPerformed(ActionEvent e) {
+        if (handler.getTileset().size() > 0)
             handler.getGrid().copySelectedLayer();
-        }
-    }//GEN-LAST:event_jmiCopyLayerActionPerformed
+    }
 
-    private void jmiPasteLayerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiPasteLayerActionPerformed
+    private void jmiPasteLayerActionPerformed(ActionEvent e) {
         if (handler.getTileset().size() > 0) {
             if (handler.getGrid().getTileLayerCopy() != null && handler.getGrid().getHeightLayerCopy() != null) {
                 handler.addMapState(new MapLayerState("Paste Tile and Height Layer", handler));
@@ -1640,9 +243,9 @@ public class MainFrame extends javax.swing.JFrame {
                 thumbnailLayerSelector.repaint();
             }
         }
-    }//GEN-LAST:event_jmiPasteLayerActionPerformed
+    }
 
-    private void jmiPasteLayerTilesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiPasteLayerTilesActionPerformed
+    private void jmiPasteLayerTilesActionPerformed(ActionEvent e) {
         if (handler.getTileset().size() > 0) {
             if (handler.getGrid().getTileLayerCopy() != null) {
                 handler.addMapState(new MapLayerState("Paste Tile Layer", handler));
@@ -1652,9 +255,9 @@ public class MainFrame extends javax.swing.JFrame {
                 thumbnailLayerSelector.repaint();
             }
         }
-    }//GEN-LAST:event_jmiPasteLayerTilesActionPerformed
+    }
 
-    private void jmiPasteLayerHeightsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmiPasteLayerHeightsActionPerformed
+    private void jmiPasteLayerHeightsActionPerformed(ActionEvent e) {
         if (handler.getTileset().size() > 0) {
             if (handler.getGrid().getHeightLayerCopy() != null) {
                 handler.addMapState(new MapLayerState("Paste Height Layer", handler));
@@ -1664,174 +267,203 @@ public class MainFrame extends javax.swing.JFrame {
                 thumbnailLayerSelector.repaint();
             }
         }
-    }//GEN-LAST:event_jmiPasteLayerHeightsActionPerformed
-
-    private void jbBacksoundEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbBacksoundEditorActionPerformed
-        openBacksoundEditor();
-    }//GEN-LAST:event_jbBacksoundEditorActionPerformed
-
-    private void mapDisplayContainerComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_mapDisplayContainerComponentResized
-        int size = Math.min(mapDisplayContainer.getWidth(), mapDisplayContainer.getHeight());
-        mapDisplay.setPreferredSize(new Dimension(size, size));
-        mapDisplayContainer.revalidate();
-    }//GEN-LAST:event_mapDisplayContainerComponentResized
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Windows".equals(info.getName()) || "GTK+".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                MainFrame mainFrame = new MainFrame();
-                mainFrame.setVisible(true);
-
-                if (args.length > 0) {
-                    try {
-                        if (args[0].endsWith(MapGrid.fileExtension)) {
-                            mainFrame.openMap(args[0]);
-                        } else if (args[0].endsWith(Tileset.fileExtension)) {
-                            mainFrame.openTileset(args[0]);
-                        }
-                    } catch (Exception ex) {
-
-                    }
-                }
-            }
-        });
-
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private editor.bordermap.BorderMapsDisplay borderMapsDisplay;
-    private editor.heightselector.HeightSelector heightSelector;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
-    private javax.swing.JPanel jPanel7;
-    private javax.swing.JPanel jPanel8;
-    private javax.swing.JPanel jPanel9;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JPopupMenu.Separator jSeparator1;
-    private javax.swing.JPopupMenu.Separator jSeparator10;
-    private javax.swing.JToolBar.Separator jSeparator11;
-    private javax.swing.JPopupMenu.Separator jSeparator12;
-    private javax.swing.JPopupMenu.Separator jSeparator13;
-    private javax.swing.JPopupMenu.Separator jSeparator2;
-    private javax.swing.JPopupMenu.Separator jSeparator3;
-    private javax.swing.JToolBar.Separator jSeparator4;
-    private javax.swing.JToolBar.Separator jSeparator5;
-    private javax.swing.JPopupMenu.Separator jSeparator6;
-    private javax.swing.JToolBar.Separator jSeparator7;
-    private javax.swing.JToolBar.Separator jSeparator8;
-    private javax.swing.JPopupMenu.Separator jSeparator9;
-    private javax.swing.JToolBar jToolBar1;
-    private javax.swing.JButton jb3DView;
-    private javax.swing.JButton jbAnimationEditor;
-    private javax.swing.JButton jbBacksoundEditor;
-    private javax.swing.JButton jbBdhcEditor;
-    private javax.swing.JButton jbBuildingEditor;
-    private javax.swing.JButton jbClearTile;
-    private javax.swing.JButton jbCollisionsEditor;
-    private javax.swing.JButton jbExportImd;
-    private javax.swing.JButton jbExportNsb;
-    private javax.swing.JButton jbExportNsb1;
-    private javax.swing.JButton jbExportObj;
-    private javax.swing.JButton jbGridView;
-    private javax.swing.JButton jbHeightView;
-    private javax.swing.JButton jbHelp;
-    private javax.swing.JButton jbKeboardInfo;
-    private javax.swing.JButton jbMoveMapDown;
-    private javax.swing.JButton jbMoveMapLeft;
-    private javax.swing.JButton jbMoveMapRight;
-    private javax.swing.JButton jbMoveMapUp;
-    private javax.swing.JButton jbNewMap;
-    private javax.swing.JButton jbNsbtxEditor1;
-    private javax.swing.JButton jbOpenMap;
-    private javax.swing.JButton jbRedo;
-    private javax.swing.JButton jbSaveMap;
-    private javax.swing.JButton jbTilelistEditor;
-    private javax.swing.JButton jbTopView;
-    private javax.swing.JButton jbUndo;
-    private javax.swing.JButton jbUseSmartGrid;
-    private javax.swing.JCheckBoxMenuItem jcbUseBackImage;
-    private javax.swing.JLabel jlGame;
-    private javax.swing.JLabel jlGameIcon;
-    private javax.swing.JLabel jlGameName;
-    private javax.swing.JMenu jmHelp;
-    private javax.swing.JMenuItem jmi3dView;
-    private javax.swing.JMenuItem jmiAbout;
-    private javax.swing.JMenuItem jmiBdhcEditor;
-    private javax.swing.JMenuItem jmiClearAllLayers;
-    private javax.swing.JMenuItem jmiClearLayer;
-    private javax.swing.JMenuItem jmiClearTiles;
-    private javax.swing.JMenuItem jmiCollisionEditor;
-    private javax.swing.JMenuItem jmiCopyLayer;
-    private javax.swing.JMenuItem jmiExportAllTiles;
-    private javax.swing.JMenuItem jmiExportMapAsImd;
-    private javax.swing.JMenuItem jmiExportMapAsNsb;
-    private javax.swing.JMenuItem jmiExportMapBtx;
-    private javax.swing.JMenuItem jmiExportObjWithText;
-    private javax.swing.JMenuItem jmiExportTileset;
-    private javax.swing.JMenuItem jmiImportTileset;
-    private javax.swing.JMenuItem jmiKeyboardInfo;
-    private javax.swing.JMenuItem jmiLoadBackImg;
-    private javax.swing.JMenuItem jmiNewMap;
-    private javax.swing.JMenuItem jmiNsbtxEditor;
-    private javax.swing.JMenuItem jmiOpenMap;
-    private javax.swing.JMenuItem jmiPasteLayer;
-    private javax.swing.JMenuItem jmiPasteLayerHeights;
-    private javax.swing.JMenuItem jmiPasteLayerTiles;
-    private javax.swing.JMenuItem jmiRedo;
-    private javax.swing.JMenuItem jmiSaveMap;
-    private javax.swing.JMenuItem jmiSaveMapAs;
-    private javax.swing.JMenuItem jmiTilesetEditor;
-    private javax.swing.JMenuItem jmiToggleGrid;
-    private javax.swing.JMenuItem jmiToggleHeightView;
-    private javax.swing.JMenuItem jmiTopView;
-    private javax.swing.JMenuItem jmiUndo;
-    private javax.swing.JMenuItem jmiUseSmartDrawing;
-    private javax.swing.JSlider jsBackImageAlpha;
-    private javax.swing.JSlider jsHeightMapAlpha;
-    private editor.MapDisplay mapDisplay;
-    private javax.swing.JPanel mapDisplayContainer;
-    private editor.smartdrawing.SmartGridDisplay smartGridDisplay;
-    private editor.layerselector.ThumbnailLayerSelector thumbnailLayerSelector;
-    private editor.tileseteditor.TileDisplay tileDisplay;
-    private editor.tileselector.TileSelector tileSelector;
-    // End of variables declaration//GEN-END:variables
+    private void jmi3dViewActionPerformed(ActionEvent e) {
+        mapDisplay.set3DView();
+        mapDisplay.repaint();
+    }
+
+    private void jmiTopViewActionPerformed(ActionEvent e) {
+        mapDisplay.setOrthoView();
+        mapDisplay.repaint();
+    }
+
+    private void jmiToggleHeightViewActionPerformed(ActionEvent e) {
+        mapDisplay.toggleHeightView();
+        mapDisplay.repaint();
+    }
+
+    private void jmiToggleGridActionPerformed(ActionEvent e) {
+        mapDisplay.toggleGridView();
+        mapDisplay.repaint();
+    }
+
+    private void jmiLoadBackImgActionPerformed(ActionEvent e) {
+        openBackImgWithDialog();
+    }
+
+    private void jcbUseBackImageActionPerformed(ActionEvent e) {
+        mapDisplay.setBackImageEnabled(jcbUseBackImage.isSelected());
+        mapDisplay.repaint();
+    }
+
+    private void jmiTilesetEditorActionPerformed(ActionEvent e) {
+        openTilesetEditor();
+    }
+
+    private void jmiCollisionEditorActionPerformed(ActionEvent e) {
+        openCollisionsEditor();
+    }
+
+    private void jmiBdhcEditorActionPerformed(ActionEvent e) {
+        openBdhcEditor();
+    }
+
+    private void jmiNsbtxEditorActionPerformed(ActionEvent e) {
+        openNsbtxEditor();
+    }
+
+    private void jmiKeyboardInfoActionPerformed(ActionEvent e) {
+        openKeyboardInfoDialog();
+    }
+
+    private void jmiAboutActionPerformed(ActionEvent e) {
+        openAboutDialog();
+    }
+
+    private void jbNewMapActionPerformed(ActionEvent e) {
+        newMap();
+    }
+
+    private void jbOpenMapActionPerformed(ActionEvent e) {
+        openMapWithDialog();
+    }
+
+    private void jbSaveMapActionPerformed(ActionEvent e) {
+        if (handler.getGrid().filePath.isEmpty())
+            saveMapWithDialog();
+        else
+            saveMap();
+    }
+
+    private void jbExportObjActionPerformed(ActionEvent e) {
+        saveMapAsObjWithDialog();
+    }
+
+    private void jbExportImdActionPerformed(ActionEvent e) {
+        saveMapAsImdWithDialog();
+    }
+
+    private void jbExportNsbActionPerformed(ActionEvent e) {
+        saveMapAsNsbWithDialog();
+    }
+
+    private void jbExportNsb1ActionPerformed(ActionEvent e) {
+        saveMapBtxWithDialog();
+    }
+
+    private void jbUndoActionPerformed(ActionEvent e) {
+        undoMapState();
+    }
+
+    private void jbRedoActionPerformed(ActionEvent e) {
+        redoMapState();
+    }
+
+    private void jb3DViewActionPerformed(ActionEvent e) {
+        mapDisplay.set3DView();
+        mapDisplay.repaint();
+    }
+
+    private void jbTopViewActionPerformed(ActionEvent e) {
+        mapDisplay.setOrthoView();
+        mapDisplay.repaint();
+    }
+
+    private void jbHeightViewActionPerformed(ActionEvent e) {
+        mapDisplay.toggleHeightView();
+        mapDisplay.repaint();
+    }
+
+    private void jbGridViewActionPerformed(ActionEvent e) {
+        mapDisplay.toggleGridView();
+        mapDisplay.repaint();
+    }
+
+    private void jbClearTileActionPerformed(ActionEvent e) {
+        mapDisplay.toggleClearTile();
+    }
+
+    private void jbUseSmartGridActionPerformed(ActionEvent e) {
+        mapDisplay.toggleSmartGrid();
+    }
+
+    private void jbTilelistEditorActionPerformed(ActionEvent e) {
+        openTilesetEditor();
+    }
+
+    private void jbCollisionsEditorActionPerformed(ActionEvent e) {
+        openCollisionsEditor();
+    }
+
+    private void jbBdhcEditorActionPerformed(ActionEvent e) {
+        openBdhcEditor();
+    }
+
+    private void jbBacksoundEditorActionPerformed(ActionEvent e) {
+        openBacksoundEditor();
+    }
+
+    private void jbNsbtxEditor1ActionPerformed(ActionEvent e) {
+        openNsbtxEditor2();
+    }
+
+    private void jbBuildingEditorActionPerformed(ActionEvent e) {
+        openBuildingEditor2();
+    }
+
+    private void jbAnimationEditorActionPerformed(ActionEvent e) {
+        openAnimationEditor();
+    }
+
+    private void jbKeboardInfoActionPerformed(ActionEvent e) {
+        openKeyboardInfoDialog();
+    }
+
+    private void jbHelpActionPerformed(ActionEvent e) {
+        openAboutDialog(); //TODO move this to another button
+    }
+
+    private void jlGameIconMousePressed(MouseEvent e) {
+        changeGame();
+    }
+
+    private void tileSelectorMousePressed(MouseEvent e) {
+        repaintTileDisplay();
+    }
+
+    private void jsHeightMapAlphaStateChanged(ChangeEvent e) {
+        mapDisplay.setHeightMapAlpha(jsHeightMapAlpha.getValue() / 100f);
+        mapDisplay.repaint();
+    }
+
+    private void jsBackImageAlphaStateChanged(ChangeEvent e) {
+        mapDisplay.setBackImageAlpha(jsBackImageAlpha.getValue() / 100f);
+        mapDisplay.repaint();
+    }
+
+    private void jbMoveMapUpActionPerformed(ActionEvent e) {
+        moveTilesUp();
+    }
+
+    private void jbMoveMapDownActionPerformed(ActionEvent e) {
+        moveTilesDown();
+    }
+
+    private void jbMoveMapLeftActionPerformed(ActionEvent e) {
+        moveTilesLeft();
+    }
+
+    private void jbMoveMapRightActionPerformed(ActionEvent e) {
+        moveTilesRight();
+    }
+
+    private void pnlMapDisplayComponentResized(ComponentEvent e) {
+        int size = Math.min(pnlMapDisplay.getWidth(), pnlMapDisplay.getHeight());
+        mapDisplay.setPreferredSize(new Dimension(size, size));
+        pnlMapDisplay.revalidate();
+    }
 
     public void openMap(String path) {
         try {
@@ -1942,7 +574,7 @@ public class MainFrame extends javax.swing.JFrame {
         if (handler.getLastMapDirectoryUsed() != null) {
             fc.setCurrentDirectory(new File(handler.getLastMapDirectoryUsed()));
         }
-        
+
         fc.setFileFilter(new FileNameExtensionFilter("Pokemon DS map (*.pdsmap)", MapGrid.fileExtension));
         fc.setApproveButtonText("Open");
         fc.setDialogTitle("Open Map");
@@ -2311,11 +943,11 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }
 
-    private void saveMapAsObjWithDialog(boolean saveTextures) {
+    private void saveMapAsObjWithDialog() {
         final ExportMapObjDialog exportMapDialog = new ExportMapObjDialog(this, true, "Export OBJ Map Settings");
         exportMapDialog.setLocationRelativeTo(null);
         exportMapDialog.setVisible(true);
-        if (exportMapDialog.getReturnValue() == exportMapDialog.APPROVE_OPTION) {
+        if (exportMapDialog.getReturnValue() == ExportMapObjDialog.APPROVE_OPTION) {
             boolean includeVertexColors = exportMapDialog.includeVertexColors();
 
             final JFileChooser fc = new JFileChooser();
@@ -2331,7 +963,7 @@ public class MainFrame extends javax.swing.JFrame {
                 handler.setLastMapDirectoryUsed(fc.getSelectedFile().getParent());
                 try {
                     String path = fc.getSelectedFile().getPath();
-                    handler.getGrid().saveMapToOBJ(handler.getTileset(), path, saveTextures, includeVertexColors);
+                    handler.getGrid().saveMapToOBJ(handler.getTileset(), path, true, includeVertexColors);
                     JOptionPane.showMessageDialog(this, "OBJ map succesfully exported.", "Map saved", JOptionPane.INFORMATION_MESSAGE);
                 } catch (FileNotFoundException ex) {
                     JOptionPane.showMessageDialog(this, "Can't save file.", "Error saving map", JOptionPane.ERROR_MESSAGE);
@@ -2412,7 +1044,7 @@ public class MainFrame extends javax.swing.JFrame {
         if (handler.getTileset().size() == 0) {
             JOptionPane.showMessageDialog(this,
                     "There is no tileset loaded.\n"
-                    + "The IMD can be exported but the materials will be set to default.\n",
+                            + "The IMD can be exported but the materials will be set to default.\n",
                     "No tileset loaded",
                     JOptionPane.WARNING_MESSAGE);
         }
@@ -2447,24 +1079,24 @@ public class MainFrame extends javax.swing.JFrame {
                         final int numTris = model.getNumTris();
                         final int numQuads = model.getNumQuads();
                         JOptionPane.showMessageDialog(this, "IMD map succesfully exported.\n\n"
-                                + "Number of Materials: " + String.valueOf(model.getNumMaterials()) + "\n"
-                                + "Number of Vertices: " + String.valueOf(numVertices) + "\n"
-                                + "Number of Polygons: " + String.valueOf(numPolygons) + "\n"
-                                + "Number of Triangles: " + String.valueOf(numTris) + "\n"
-                                + "Number of Quads: " + String.valueOf(numQuads),
+                                        + "Number of Materials: " + model.getNumMaterials() + "\n"
+                                        + "Number of Vertices: " + numVertices + "\n"
+                                        + "Number of Polygons: " + numPolygons + "\n"
+                                        + "Number of Triangles: " + numTris + "\n"
+                                        + "Number of Quads: " + numQuads,
                                 "Map saved", JOptionPane.INFORMATION_MESSAGE);
                         final int maxNumPolygons = 1800;
                         final int maxNumTris = 1200;
                         if (numTris > maxNumTris) {
                             JOptionPane.showMessageDialog(this, "The map might not work properly in game.\n\n"
-                                    + "The map contains " + String.valueOf(numTris) + " triangles" + "\n"
-                                    + "Try to use less than " + maxNumTris + " triangles" + "\n"
-                                    + "Or try to use quads instead of triangles" + "\n",
+                                            + "The map contains " + numTris + " triangles" + "\n"
+                                            + "Try to use less than " + maxNumTris + " triangles" + "\n"
+                                            + "Or try to use quads instead of triangles" + "\n",
                                     "Too many triangles", JOptionPane.INFORMATION_MESSAGE);
                         } else if (numPolygons > maxNumPolygons) {
                             JOptionPane.showMessageDialog(this, "The map may not work properly in game.\n\n"
-                                    + "The map contains " + String.valueOf(numPolygons) + " polygons" + "\n"
-                                    + "Try to use less than " + maxNumPolygons + " polygons",
+                                            + "The map contains " + numPolygons + " polygons" + "\n"
+                                            + "Try to use less than " + maxNumPolygons + " polygons",
                                     "Too many polygons", JOptionPane.WARNING_MESSAGE);
                         }
                     } catch (ParserConfigurationException | TransformerException ex) {
@@ -2599,14 +1231,14 @@ public class MainFrame extends javax.swing.JFrame {
                                 } catch (IOException ex) {
                                     JOptionPane.showMessageDialog(this,
                                             "File was not moved to the save directory. \n"
-                                            + "Reopen Pokemon DS Map Studio and try again.",
+                                                    + "Reopen Pokemon DS Map Studio and try again.",
                                             "Problem saving generated file",
                                             JOptionPane.ERROR_MESSAGE);
                                 }
                             } else {
                                 ConverterErrorDialog dialog = new ConverterErrorDialog(this, true);
                                 dialog.init("There was a problem creating the NSBMD file. \n"
-                                        + "The output from the converter is:",
+                                                + "The output from the converter is:",
                                         outputString);
                                 dialog.setTitle("Problem generating file");
                                 dialog.setLocationRelativeTo(this);
@@ -2615,7 +1247,7 @@ public class MainFrame extends javax.swing.JFrame {
                         } catch (IOException ex) {
                             JOptionPane.showMessageDialog(this,
                                     "The program \"g3dcvtr.exe\" is not found in the \"converter\" folder.\n"
-                                    + "Put the program and its *.dll files in the folder and try again.",
+                                            + "Put the program and its *.dll files in the folder and try again.",
                                     "Converter not found",
                                     JOptionPane.ERROR_MESSAGE);
                         } catch (InterruptedException ex) {
@@ -2707,14 +1339,14 @@ public class MainFrame extends javax.swing.JFrame {
                         } catch (IOException ex) {
                             JOptionPane.showMessageDialog(this,
                                     "File was not moved to the save directory. \n"
-                                    + "Reopen Pokemon DS Map Studio and try again.",
+                                            + "Reopen Pokemon DS Map Studio and try again.",
                                     "Problem saving generated file",
                                     JOptionPane.ERROR_MESSAGE);
                         }
                     } else {
                         ConverterErrorDialog dialog = new ConverterErrorDialog(this, true);
                         dialog.init("There was a problem creating the NSBTX file. \n"
-                                + "The output from the converter is:",
+                                        + "The output from the converter is:",
                                 outputString);
                         dialog.setTitle("Problem generating file");
                         dialog.setLocationRelativeTo(this);
@@ -2723,7 +1355,7 @@ public class MainFrame extends javax.swing.JFrame {
                 } catch (IOException ex) {
                     JOptionPane.showMessageDialog(this,
                             "The program \"g3dcvtr.exe\" is not found in the \"converter\" folder.\n"
-                            + "Put the program and its *.dll files in the folder and try again.",
+                                    + "Put the program and its *.dll files in the folder and try again.",
                             "Converter not found",
                             JOptionPane.ERROR_MESSAGE);
                 } catch (InterruptedException ex) {
@@ -2783,8 +1415,8 @@ public class MainFrame extends javax.swing.JFrame {
     }
 
     private void updateViewGame() {
-        jlGameName.setText(Game.gameNames[handler.getGameIndex()]);
-        jlGameIcon.setIcon(new ImageIcon(handler.getGame().gameIcons[handler.getGameIndex()]));
+        lblGameName.setText(Game.gameNames[handler.getGameIndex()]);
+        lblGameIcon.setIcon(new ImageIcon(handler.getGame().gameIcons[handler.getGameIndex()]));
     }
 
     public void undoMapState() {
@@ -2865,4 +1497,1259 @@ public class MainFrame extends javax.swing.JFrame {
         return tileDisplay;
     }
 
+    private void initComponents() {
+        // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+        jMenu = new JMenuBar();
+        jMenu1 = new JMenu();
+        jmiNewMap = new JMenuItem();
+        jmiOpenMap = new JMenuItem();
+        jmiSaveMap = new JMenuItem();
+        jmiSaveMapAs = new JMenuItem();
+        jmiExportObjWithText = new JMenuItem();
+        jmiExportMapAsImd = new JMenuItem();
+        jmiExportMapAsNsb = new JMenuItem();
+        jmiExportMapBtx = new JMenuItem();
+        jmiImportTileset = new JMenuItem();
+        jmiExportTileset = new JMenuItem();
+        jmiExportAllTiles = new JMenuItem();
+        jMenu2 = new JMenu();
+        jmiUndo = new JMenuItem();
+        jmiRedo = new JMenuItem();
+        jmiClearTiles = new JMenuItem();
+        jmiUseSmartDrawing = new JMenuItem();
+        jmiClearLayer = new JMenuItem();
+        jmiClearAllLayers = new JMenuItem();
+        jmiCopyLayer = new JMenuItem();
+        jmiPasteLayer = new JMenuItem();
+        jmiPasteLayerTiles = new JMenuItem();
+        jmiPasteLayerHeights = new JMenuItem();
+        jMenu3 = new JMenu();
+        jmi3dView = new JMenuItem();
+        jmiTopView = new JMenuItem();
+        jmiToggleHeightView = new JMenuItem();
+        jmiToggleGrid = new JMenuItem();
+        jmiLoadBackImg = new JMenuItem();
+        jcbUseBackImage = new JCheckBoxMenuItem();
+        jMenu4 = new JMenu();
+        jmiTilesetEditor = new JMenuItem();
+        jmiCollisionEditor = new JMenuItem();
+        jmiBdhcEditor = new JMenuItem();
+        jmiNsbtxEditor = new JMenuItem();
+        jmHelp = new JMenu();
+        jmiKeyboardInfo = new JMenuItem();
+        jmiAbout = new JMenuItem();
+        jToolBar = new JToolBar();
+        jbNewMap = new JButton();
+        jbOpenMap = new JButton();
+        jbSaveMap = new JButton();
+        jbExportObj = new JButton();
+        jbExportImd = new JButton();
+        jbExportNsb = new JButton();
+        jbExportNsb1 = new JButton();
+        jbUndo = new JButton();
+        jbRedo = new JButton();
+        jb3DView = new JButton();
+        jbTopView = new JButton();
+        jbHeightView = new JButton();
+        jbGridView = new JButton();
+        jbClearTile = new JButton();
+        jbUseSmartGrid = new JButton();
+        jbTilelistEditor = new JButton();
+        jbCollisionsEditor = new JButton();
+        jbBdhcEditor = new JButton();
+        jbBacksoundEditor = new JButton();
+        jbNsbtxEditor1 = new JButton();
+        jbBuildingEditor = new JButton();
+        jbAnimationEditor = new JButton();
+        jbKeboardInfo = new JButton();
+        jbHelp = new JButton();
+        pnlGameInfo = new JPanel();
+        lblGame = new JLabel();
+        lblGameIcon = new JLabel();
+        lblGameName = new JLabel();
+        pnlMainWindow = new JPanel();
+        pnlLayer = new JPanel();
+        thumbnailLayerSelector = new ThumbnailLayerSelector();
+        pnlZ = new JPanel();
+        heightSelector = new HeightSelector();
+        pnlTileList = new JPanel();
+        jScrollPane1 = new JScrollPane();
+        tileSelector = new TileSelector();
+        pnlSmartDrawing = new JPanel();
+        jScrollPane2 = new JScrollPane();
+        smartGridDisplay = new SmartGridDisplay();
+        pnlRightPanel = new JPanel();
+        pnlBorderMap = new JPanel();
+        borderMapsDisplay = new BorderMapsDisplay();
+        pnlHeightMapAlpha = new JPanel();
+        jsHeightMapAlpha = new JSlider();
+        pnlBackImageAlpha = new JPanel();
+        jsBackImageAlpha = new JSlider();
+        pnlMoveLayer = new JPanel();
+        jbMoveMapUp = new JButton();
+        jbMoveMapDown = new JButton();
+        jbMoveMapLeft = new JButton();
+        jbMoveMapRight = new JButton();
+        pnlSelectedTile = new JPanel();
+        tileDisplay = new TileDisplay();
+        pnlMapDisplay = new JPanel();
+        mapDisplay = new MapDisplay();
+
+        //======== this ========
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        setTitle("Pokemon DS Map Studio");
+        setName("this");
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                formWindowClosing(e);
+            }
+        });
+        var contentPane = getContentPane();
+        contentPane.setLayout(new MigLayout(
+            "insets 0,hidemode 3,gap 5 5",
+            // columns
+            "[grow,fill]" +
+            "[fill]",
+            // rows
+            "[fill]" +
+            "[grow,fill]"));
+
+        //======== jMenu ========
+        {
+            jMenu.setName("jMenu");
+
+            //======== jMenu1 ========
+            {
+                jMenu1.setText("File");
+                jMenu1.setName("jMenu1");
+
+                //---- jmiNewMap ----
+                jmiNewMap.setIcon(new ImageIcon(getClass().getResource("/icons/newMapIcon_s.png")));
+                jmiNewMap.setText("New Map...");
+                jmiNewMap.setName("jmiNewMap");
+                jmiNewMap.addActionListener(e -> jmiNewMapActionPerformed(e));
+                jMenu1.add(jmiNewMap);
+                jMenu1.addSeparator();
+
+                //---- jmiOpenMap ----
+                jmiOpenMap.setIcon(new ImageIcon(getClass().getResource("/icons/openMapIcon_s.png")));
+                jmiOpenMap.setText("Open Map...");
+                jmiOpenMap.setName("jmiOpenMap");
+                jmiOpenMap.addActionListener(e -> jmiOpenMapActionPerformed(e));
+                jMenu1.add(jmiOpenMap);
+                jMenu1.addSeparator();
+
+                //---- jmiSaveMap ----
+                jmiSaveMap.setText("Save Map...");
+                jmiSaveMap.setName("jmiSaveMap");
+                jmiSaveMap.addActionListener(e -> jmiSaveMapActionPerformed(e));
+                jMenu1.add(jmiSaveMap);
+
+                //---- jmiSaveMapAs ----
+                jmiSaveMapAs.setText("Save Map as...");
+                jmiSaveMapAs.setName("jmiSaveMapAs");
+                jmiSaveMapAs.addActionListener(e -> jmiSaveMapAsActionPerformed(e));
+                jMenu1.add(jmiSaveMapAs);
+                jMenu1.addSeparator();
+
+                //---- jmiExportObjWithText ----
+                jmiExportObjWithText.setText("Export Map as OBJ with textures...");
+                jmiExportObjWithText.setName("jmiExportObjWithText");
+                jmiExportObjWithText.addActionListener(e -> jmiExportObjWithTextActionPerformed(e));
+                jMenu1.add(jmiExportObjWithText);
+
+                //---- jmiExportMapAsImd ----
+                jmiExportMapAsImd.setText("Export Map as IMD...");
+                jmiExportMapAsImd.setName("jmiExportMapAsImd");
+                jmiExportMapAsImd.addActionListener(e -> jmiExportMapAsImdActionPerformed(e));
+                jMenu1.add(jmiExportMapAsImd);
+
+                //---- jmiExportMapAsNsb ----
+                jmiExportMapAsNsb.setText("Export Map as NSBMD...");
+                jmiExportMapAsNsb.setName("jmiExportMapAsNsb");
+                jmiExportMapAsNsb.addActionListener(e -> jmiExportMapAsNsbActionPerformed(e));
+                jMenu1.add(jmiExportMapAsNsb);
+
+                //---- jmiExportMapBtx ----
+                jmiExportMapBtx.setText("Export Map's NSBTX...");
+                jmiExportMapBtx.setName("jmiExportMapBtx");
+                jmiExportMapBtx.addActionListener(e -> jmiExportMapBtxActionPerformed(e));
+                jMenu1.add(jmiExportMapBtx);
+                jMenu1.addSeparator();
+
+                //---- jmiImportTileset ----
+                jmiImportTileset.setText("Import Tileset...");
+                jmiImportTileset.setName("jmiImportTileset");
+                jmiImportTileset.addActionListener(e -> jmiImportTilesetActionPerformed(e));
+                jMenu1.add(jmiImportTileset);
+
+                //---- jmiExportTileset ----
+                jmiExportTileset.setText("Export Tileset...");
+                jmiExportTileset.setName("jmiExportTileset");
+                jmiExportTileset.addActionListener(e -> jmiExportTilesetActionPerformed(e));
+                jMenu1.add(jmiExportTileset);
+
+                //---- jmiExportAllTiles ----
+                jmiExportAllTiles.setText("Export All Tiles as OBJ...");
+                jmiExportAllTiles.setName("jmiExportAllTiles");
+                jmiExportAllTiles.addActionListener(e -> jmiExportAllTilesActionPerformed(e));
+                jMenu1.add(jmiExportAllTiles);
+            }
+            jMenu.add(jMenu1);
+
+            //======== jMenu2 ========
+            {
+                jMenu2.setText("Edit");
+                jMenu2.setName("jMenu2");
+
+                //---- jmiUndo ----
+                jmiUndo.setText("Undo");
+                jmiUndo.setName("jmiUndo");
+                jmiUndo.addActionListener(e -> jmiUndoActionPerformed(e));
+                jMenu2.add(jmiUndo);
+
+                //---- jmiRedo ----
+                jmiRedo.setText("Redo");
+                jmiRedo.setName("jmiRedo");
+                jmiRedo.addActionListener(e -> jmiRedoActionPerformed(e));
+                jMenu2.add(jmiRedo);
+                jMenu2.addSeparator();
+
+                //---- jmiClearTiles ----
+                jmiClearTiles.setText("Clear Tiles");
+                jmiClearTiles.setName("jmiClearTiles");
+                jmiClearTiles.addActionListener(e -> jmiClearTilesActionPerformed(e));
+                jMenu2.add(jmiClearTiles);
+
+                //---- jmiUseSmartDrawing ----
+                jmiUseSmartDrawing.setText("Use Smart Drawing");
+                jmiUseSmartDrawing.setName("jmiUseSmartDrawing");
+                jmiUseSmartDrawing.addActionListener(e -> jmiUseSmartDrawingActionPerformed(e));
+                jMenu2.add(jmiUseSmartDrawing);
+                jMenu2.addSeparator();
+
+                //---- jmiClearLayer ----
+                jmiClearLayer.setText("Clear Layer");
+                jmiClearLayer.setName("jmiClearLayer");
+                jmiClearLayer.addActionListener(e -> jmiClearLayerActionPerformed(e));
+                jMenu2.add(jmiClearLayer);
+
+                //---- jmiClearAllLayers ----
+                jmiClearAllLayers.setText("Clear All Layers");
+                jmiClearAllLayers.setEnabled(false);
+                jmiClearAllLayers.setName("jmiClearAllLayers");
+                jmiClearAllLayers.addActionListener(e -> jmiClearAllLayersActionPerformed(e));
+                jMenu2.add(jmiClearAllLayers);
+                jMenu2.addSeparator();
+
+                //---- jmiCopyLayer ----
+                jmiCopyLayer.setText("Copy Layer");
+                jmiCopyLayer.setName("jmiCopyLayer");
+                jmiCopyLayer.addActionListener(e -> jmiCopyLayerActionPerformed(e));
+                jMenu2.add(jmiCopyLayer);
+
+                //---- jmiPasteLayer ----
+                jmiPasteLayer.setText("Paste Layer");
+                jmiPasteLayer.setName("jmiPasteLayer");
+                jmiPasteLayer.addActionListener(e -> jmiPasteLayerActionPerformed(e));
+                jMenu2.add(jmiPasteLayer);
+
+                //---- jmiPasteLayerTiles ----
+                jmiPasteLayerTiles.setText("Paste Layer Tiles");
+                jmiPasteLayerTiles.setName("jmiPasteLayerTiles");
+                jmiPasteLayerTiles.addActionListener(e -> jmiPasteLayerTilesActionPerformed(e));
+                jMenu2.add(jmiPasteLayerTiles);
+
+                //---- jmiPasteLayerHeights ----
+                jmiPasteLayerHeights.setText("Paste Layer Heights");
+                jmiPasteLayerHeights.setName("jmiPasteLayerHeights");
+                jmiPasteLayerHeights.addActionListener(e -> jmiPasteLayerHeightsActionPerformed(e));
+                jMenu2.add(jmiPasteLayerHeights);
+            }
+            jMenu.add(jMenu2);
+
+            //======== jMenu3 ========
+            {
+                jMenu3.setText("View");
+                jMenu3.setName("jMenu3");
+
+                //---- jmi3dView ----
+                jmi3dView.setText("3D View");
+                jmi3dView.setName("jmi3dView");
+                jmi3dView.addActionListener(e -> jmi3dViewActionPerformed(e));
+                jMenu3.add(jmi3dView);
+
+                //---- jmiTopView ----
+                jmiTopView.setText("Top View");
+                jmiTopView.setName("jmiTopView");
+                jmiTopView.addActionListener(e -> jmiTopViewActionPerformed(e));
+                jMenu3.add(jmiTopView);
+
+                //---- jmiToggleHeightView ----
+                jmiToggleHeightView.setText("Toggle Height View");
+                jmiToggleHeightView.setName("jmiToggleHeightView");
+                jmiToggleHeightView.addActionListener(e -> jmiToggleHeightViewActionPerformed(e));
+                jMenu3.add(jmiToggleHeightView);
+
+                //---- jmiToggleGrid ----
+                jmiToggleGrid.setText("Toggle Grid");
+                jmiToggleGrid.setName("jmiToggleGrid");
+                jmiToggleGrid.addActionListener(e -> jmiToggleGridActionPerformed(e));
+                jMenu3.add(jmiToggleGrid);
+                jMenu3.addSeparator();
+
+                //---- jmiLoadBackImg ----
+                jmiLoadBackImg.setText("Open Background Image");
+                jmiLoadBackImg.setName("jmiLoadBackImg");
+                jmiLoadBackImg.addActionListener(e -> jmiLoadBackImgActionPerformed(e));
+                jMenu3.add(jmiLoadBackImg);
+
+                //---- jcbUseBackImage ----
+                jcbUseBackImage.setText("Use Background Image");
+                jcbUseBackImage.setName("jcbUseBackImage");
+                jcbUseBackImage.addActionListener(e -> jcbUseBackImageActionPerformed(e));
+                jMenu3.add(jcbUseBackImage);
+            }
+            jMenu.add(jMenu3);
+
+            //======== jMenu4 ========
+            {
+                jMenu4.setText("Tools");
+                jMenu4.setName("jMenu4");
+
+                //---- jmiTilesetEditor ----
+                jmiTilesetEditor.setText("Tileset Editor");
+                jmiTilesetEditor.setName("jmiTilesetEditor");
+                jmiTilesetEditor.addActionListener(e -> jmiTilesetEditorActionPerformed(e));
+                jMenu4.add(jmiTilesetEditor);
+
+                //---- jmiCollisionEditor ----
+                jmiCollisionEditor.setText("Collision Editor");
+                jmiCollisionEditor.setName("jmiCollisionEditor");
+                jmiCollisionEditor.addActionListener(e -> jmiCollisionEditorActionPerformed(e));
+                jMenu4.add(jmiCollisionEditor);
+
+                //---- jmiBdhcEditor ----
+                jmiBdhcEditor.setText("BDHC Editor");
+                jmiBdhcEditor.setName("jmiBdhcEditor");
+                jmiBdhcEditor.addActionListener(e -> jmiBdhcEditorActionPerformed(e));
+                jMenu4.add(jmiBdhcEditor);
+
+                //---- jmiNsbtxEditor ----
+                jmiNsbtxEditor.setText("NSBTX Editor");
+                jmiNsbtxEditor.setName("jmiNsbtxEditor");
+                jmiNsbtxEditor.addActionListener(e -> jmiNsbtxEditorActionPerformed(e));
+                jMenu4.add(jmiNsbtxEditor);
+            }
+            jMenu.add(jMenu4);
+
+            //======== jmHelp ========
+            {
+                jmHelp.setText("Help");
+                jmHelp.setName("jmHelp");
+
+                //---- jmiKeyboardInfo ----
+                jmiKeyboardInfo.setText("Keyboard Shortcuts");
+                jmiKeyboardInfo.setName("jmiKeyboardInfo");
+                jmiKeyboardInfo.addActionListener(e -> jmiKeyboardInfoActionPerformed(e));
+                jmHelp.add(jmiKeyboardInfo);
+
+                //---- jmiAbout ----
+                jmiAbout.setText("About");
+                jmiAbout.setName("jmiAbout");
+                jmiAbout.addActionListener(e -> jmiAboutActionPerformed(e));
+                jmHelp.add(jmiAbout);
+            }
+            jMenu.add(jmHelp);
+        }
+        setJMenuBar(jMenu);
+
+        //======== jToolBar ========
+        {
+            jToolBar.setFloatable(false);
+            jToolBar.setRollover(true);
+            jToolBar.setMargin(null);
+            jToolBar.setMaximumSize(null);
+            jToolBar.setMinimumSize(null);
+            jToolBar.setPreferredSize(null);
+            jToolBar.setName("jToolBar");
+
+            //---- jbNewMap ----
+            jbNewMap.setIcon(new ImageIcon(getClass().getResource("/icons/newMapIcon.png")));
+            jbNewMap.setToolTipText("New Map");
+            jbNewMap.setBorderPainted(false);
+            jbNewMap.setFocusable(false);
+            jbNewMap.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbNewMap.setIconTextGap(0);
+            jbNewMap.setMargin(new Insets(0, 0, 0, 0));
+            jbNewMap.setMaximumSize(new Dimension(38, 38));
+            jbNewMap.setMinimumSize(new Dimension(38, 38));
+            jbNewMap.setPreferredSize(new Dimension(38, 38));
+            jbNewMap.setName("jbNewMap");
+            jbNewMap.addActionListener(e -> jbNewMapActionPerformed(e));
+            jToolBar.add(jbNewMap);
+
+            //---- jbOpenMap ----
+            jbOpenMap.setIcon(new ImageIcon(getClass().getResource("/icons/openMapIcon.png")));
+            jbOpenMap.setToolTipText("Open Map");
+            jbOpenMap.setFocusable(false);
+            jbOpenMap.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbOpenMap.setMaximumSize(new Dimension(38, 38));
+            jbOpenMap.setMinimumSize(new Dimension(38, 38));
+            jbOpenMap.setName("");
+            jbOpenMap.setPreferredSize(new Dimension(38, 38));
+            jbOpenMap.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbOpenMap.addActionListener(e -> jbOpenMapActionPerformed(e));
+            jToolBar.add(jbOpenMap);
+
+            //---- jbSaveMap ----
+            jbSaveMap.setIcon(new ImageIcon(getClass().getResource("/icons/saveMapIcon.png")));
+            jbSaveMap.setToolTipText("Save Map");
+            jbSaveMap.setFocusable(false);
+            jbSaveMap.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbSaveMap.setMaximumSize(new Dimension(38, 38));
+            jbSaveMap.setMinimumSize(new Dimension(38, 38));
+            jbSaveMap.setName("");
+            jbSaveMap.setPreferredSize(new Dimension(38, 38));
+            jbSaveMap.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbSaveMap.addActionListener(e -> jbSaveMapActionPerformed(e));
+            jToolBar.add(jbSaveMap);
+
+            //---- jbExportObj ----
+            jbExportObj.setIcon(new ImageIcon(getClass().getResource("/icons/exportObjIcon.png")));
+            jbExportObj.setToolTipText("Export Map as OBJ with Textures");
+            jbExportObj.setFocusable(false);
+            jbExportObj.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbExportObj.setMaximumSize(new Dimension(38, 38));
+            jbExportObj.setMinimumSize(new Dimension(38, 38));
+            jbExportObj.setName("");
+            jbExportObj.setPreferredSize(new Dimension(38, 38));
+            jbExportObj.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbExportObj.addActionListener(e -> jbExportObjActionPerformed(e));
+            jToolBar.add(jbExportObj);
+
+            //---- jbExportImd ----
+            jbExportImd.setIcon(new ImageIcon(getClass().getResource("/icons/exportImdIcon.png")));
+            jbExportImd.setToolTipText("Export Map as IMD");
+            jbExportImd.setFocusable(false);
+            jbExportImd.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbExportImd.setMaximumSize(new Dimension(38, 38));
+            jbExportImd.setMinimumSize(new Dimension(38, 38));
+            jbExportImd.setName("");
+            jbExportImd.setPreferredSize(new Dimension(38, 38));
+            jbExportImd.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbExportImd.addActionListener(e -> jbExportImdActionPerformed(e));
+            jToolBar.add(jbExportImd);
+
+            //---- jbExportNsb ----
+            jbExportNsb.setIcon(new ImageIcon(getClass().getResource("/icons/exportNsbIcon.png")));
+            jbExportNsb.setToolTipText("Export Map as NSBMD");
+            jbExportNsb.setFocusable(false);
+            jbExportNsb.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbExportNsb.setMaximumSize(new Dimension(38, 38));
+            jbExportNsb.setMinimumSize(new Dimension(38, 38));
+            jbExportNsb.setName("");
+            jbExportNsb.setPreferredSize(new Dimension(38, 38));
+            jbExportNsb.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbExportNsb.addActionListener(e -> jbExportNsbActionPerformed(e));
+            jToolBar.add(jbExportNsb);
+
+            //---- jbExportNsb1 ----
+            jbExportNsb1.setIcon(new ImageIcon(getClass().getResource("/icons/exportBtxIcon.png")));
+            jbExportNsb1.setToolTipText("Export Map NSBTX");
+            jbExportNsb1.setFocusable(false);
+            jbExportNsb1.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbExportNsb1.setMaximumSize(new Dimension(38, 38));
+            jbExportNsb1.setMinimumSize(new Dimension(38, 38));
+            jbExportNsb1.setName("");
+            jbExportNsb1.setPreferredSize(new Dimension(38, 38));
+            jbExportNsb1.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbExportNsb1.addActionListener(e -> jbExportNsb1ActionPerformed(e));
+            jToolBar.add(jbExportNsb1);
+            jToolBar.addSeparator();
+
+            //---- jbUndo ----
+            jbUndo.setIcon(new ImageIcon(getClass().getResource("/icons/undoIcon.png")));
+            jbUndo.setToolTipText("Undo (Ctrl+Z)");
+            jbUndo.setDisabledIcon(new ImageIcon(getClass().getResource("/icons/undoDisabledIcon.png")));
+            jbUndo.setEnabled(false);
+            jbUndo.setFocusable(false);
+            jbUndo.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbUndo.setMaximumSize(new Dimension(38, 38));
+            jbUndo.setMinimumSize(new Dimension(38, 38));
+            jbUndo.setName("");
+            jbUndo.setPreferredSize(new Dimension(38, 38));
+            jbUndo.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbUndo.addActionListener(e -> jbUndoActionPerformed(e));
+            jToolBar.add(jbUndo);
+
+            //---- jbRedo ----
+            jbRedo.setIcon(new ImageIcon(getClass().getResource("/icons/redoIcon.png")));
+            jbRedo.setToolTipText("Redo (Ctrl+Y)");
+            jbRedo.setDisabledIcon(new ImageIcon(getClass().getResource("/icons/redoDisabledIcon.png")));
+            jbRedo.setEnabled(false);
+            jbRedo.setFocusable(false);
+            jbRedo.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbRedo.setMaximumSize(new Dimension(38, 38));
+            jbRedo.setMinimumSize(new Dimension(38, 38));
+            jbRedo.setName("");
+            jbRedo.setPreferredSize(new Dimension(38, 38));
+            jbRedo.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbRedo.addActionListener(e -> jbRedoActionPerformed(e));
+            jToolBar.add(jbRedo);
+            jToolBar.addSeparator();
+
+            //---- jb3DView ----
+            jb3DView.setIcon(new ImageIcon(getClass().getResource("/icons/3DViewIcon.png")));
+            jb3DView.setToolTipText("3D View");
+            jb3DView.setFocusable(false);
+            jb3DView.setHorizontalTextPosition(SwingConstants.CENTER);
+            jb3DView.setMaximumSize(new Dimension(38, 38));
+            jb3DView.setMinimumSize(new Dimension(38, 38));
+            jb3DView.setName("");
+            jb3DView.setPreferredSize(new Dimension(38, 38));
+            jb3DView.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jb3DView.addActionListener(e -> jb3DViewActionPerformed(e));
+            jToolBar.add(jb3DView);
+
+            //---- jbTopView ----
+            jbTopView.setIcon(new ImageIcon(getClass().getResource("/icons/topViewIcon.png")));
+            jbTopView.setToolTipText("Ortho View");
+            jbTopView.setFocusable(false);
+            jbTopView.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbTopView.setMaximumSize(new Dimension(38, 38));
+            jbTopView.setMinimumSize(new Dimension(38, 38));
+            jbTopView.setName("");
+            jbTopView.setPreferredSize(new Dimension(38, 38));
+            jbTopView.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbTopView.addActionListener(e -> jbTopViewActionPerformed(e));
+            jToolBar.add(jbTopView);
+
+            //---- jbHeightView ----
+            jbHeightView.setIcon(new ImageIcon(getClass().getResource("/icons/heightViewIcon.png")));
+            jbHeightView.setToolTipText("Height View");
+            jbHeightView.setFocusable(false);
+            jbHeightView.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbHeightView.setMaximumSize(new Dimension(38, 38));
+            jbHeightView.setMinimumSize(new Dimension(38, 38));
+            jbHeightView.setName("");
+            jbHeightView.setPreferredSize(new Dimension(38, 38));
+            jbHeightView.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbHeightView.addActionListener(e -> jbHeightViewActionPerformed(e));
+            jToolBar.add(jbHeightView);
+
+            //---- jbGridView ----
+            jbGridView.setIcon(new ImageIcon(getClass().getResource("/icons/gridViewIcon.png")));
+            jbGridView.setToolTipText("View 3D Grid");
+            jbGridView.setFocusable(false);
+            jbGridView.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbGridView.setMaximumSize(new Dimension(38, 38));
+            jbGridView.setMinimumSize(new Dimension(38, 38));
+            jbGridView.setName("");
+            jbGridView.setPreferredSize(new Dimension(38, 38));
+            jbGridView.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbGridView.addActionListener(e -> jbGridViewActionPerformed(e));
+            jToolBar.add(jbGridView);
+            jToolBar.addSeparator();
+
+            //---- jbClearTile ----
+            jbClearTile.setIcon(new ImageIcon(getClass().getResource("/cursors/clearTileCursor.png")));
+            jbClearTile.setToolTipText("Clear Tile");
+            jbClearTile.setFocusable(false);
+            jbClearTile.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbClearTile.setMaximumSize(new Dimension(38, 38));
+            jbClearTile.setMinimumSize(new Dimension(38, 38));
+            jbClearTile.setName("");
+            jbClearTile.setPreferredSize(new Dimension(38, 38));
+            jbClearTile.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbClearTile.addActionListener(e -> jbClearTileActionPerformed(e));
+            jToolBar.add(jbClearTile);
+
+            //---- jbUseSmartGrid ----
+            jbUseSmartGrid.setIcon(new ImageIcon(getClass().getResource("/cursors/smartGridCursor.png")));
+            jbUseSmartGrid.setToolTipText("Use Smart Drawing");
+            jbUseSmartGrid.setFocusable(false);
+            jbUseSmartGrid.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbUseSmartGrid.setMaximumSize(new Dimension(38, 38));
+            jbUseSmartGrid.setMinimumSize(new Dimension(38, 38));
+            jbUseSmartGrid.setName("");
+            jbUseSmartGrid.setPreferredSize(new Dimension(38, 38));
+            jbUseSmartGrid.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbUseSmartGrid.addActionListener(e -> jbUseSmartGridActionPerformed(e));
+            jToolBar.add(jbUseSmartGrid);
+            jToolBar.addSeparator();
+
+            //---- jbTilelistEditor ----
+            jbTilelistEditor.setIcon(new ImageIcon(getClass().getResource("/icons/tilelistEditorIcon.png")));
+            jbTilelistEditor.setToolTipText("Tile List Editor");
+            jbTilelistEditor.setFocusable(false);
+            jbTilelistEditor.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbTilelistEditor.setMaximumSize(new Dimension(38, 38));
+            jbTilelistEditor.setMinimumSize(new Dimension(38, 38));
+            jbTilelistEditor.setName("");
+            jbTilelistEditor.setPreferredSize(new Dimension(38, 38));
+            jbTilelistEditor.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbTilelistEditor.addActionListener(e -> jbTilelistEditorActionPerformed(e));
+            jToolBar.add(jbTilelistEditor);
+
+            //---- jbCollisionsEditor ----
+            jbCollisionsEditor.setIcon(new ImageIcon(getClass().getResource("/icons/collisionEditorIcon.png")));
+            jbCollisionsEditor.setToolTipText("Collisions Editor");
+            jbCollisionsEditor.setFocusable(false);
+            jbCollisionsEditor.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbCollisionsEditor.setMaximumSize(new Dimension(38, 38));
+            jbCollisionsEditor.setMinimumSize(new Dimension(38, 38));
+            jbCollisionsEditor.setName("");
+            jbCollisionsEditor.setPreferredSize(new Dimension(38, 38));
+            jbCollisionsEditor.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbCollisionsEditor.addActionListener(e -> jbCollisionsEditorActionPerformed(e));
+            jToolBar.add(jbCollisionsEditor);
+
+            //---- jbBdhcEditor ----
+            jbBdhcEditor.setIcon(new ImageIcon(getClass().getResource("/icons/bdhcEditorIcon.png")));
+            jbBdhcEditor.setToolTipText("BDHC Editor");
+            jbBdhcEditor.setFocusable(false);
+            jbBdhcEditor.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbBdhcEditor.setMaximumSize(new Dimension(38, 38));
+            jbBdhcEditor.setMinimumSize(new Dimension(38, 38));
+            jbBdhcEditor.setName("");
+            jbBdhcEditor.setPreferredSize(new Dimension(38, 38));
+            jbBdhcEditor.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbBdhcEditor.addActionListener(e -> jbBdhcEditorActionPerformed(e));
+            jToolBar.add(jbBdhcEditor);
+
+            //---- jbBacksoundEditor ----
+            jbBacksoundEditor.setIcon(new ImageIcon(getClass().getResource("/icons/backsoundEditorIcon.png")));
+            jbBacksoundEditor.setToolTipText("Backsound Editor");
+            jbBacksoundEditor.setFocusable(false);
+            jbBacksoundEditor.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbBacksoundEditor.setMaximumSize(new Dimension(38, 38));
+            jbBacksoundEditor.setMinimumSize(new Dimension(38, 38));
+            jbBacksoundEditor.setName("");
+            jbBacksoundEditor.setPreferredSize(new Dimension(38, 38));
+            jbBacksoundEditor.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbBacksoundEditor.addActionListener(e -> jbBacksoundEditorActionPerformed(e));
+            jToolBar.add(jbBacksoundEditor);
+
+            //---- jbNsbtxEditor1 ----
+            jbNsbtxEditor1.setIcon(new ImageIcon(getClass().getResource("/icons/nsbtxEditorIcon.png")));
+            jbNsbtxEditor1.setToolTipText("NSBTX Editor");
+            jbNsbtxEditor1.setFocusable(false);
+            jbNsbtxEditor1.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbNsbtxEditor1.setMaximumSize(new Dimension(38, 38));
+            jbNsbtxEditor1.setMinimumSize(new Dimension(38, 38));
+            jbNsbtxEditor1.setName("");
+            jbNsbtxEditor1.setPreferredSize(new Dimension(38, 38));
+            jbNsbtxEditor1.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbNsbtxEditor1.addActionListener(e -> jbNsbtxEditor1ActionPerformed(e));
+            jToolBar.add(jbNsbtxEditor1);
+
+            //---- jbBuildingEditor ----
+            jbBuildingEditor.setIcon(new ImageIcon(getClass().getResource("/icons/buildingEditorIcon.png")));
+            jbBuildingEditor.setToolTipText("Building Editor");
+            jbBuildingEditor.setFocusable(false);
+            jbBuildingEditor.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbBuildingEditor.setMaximumSize(new Dimension(38, 38));
+            jbBuildingEditor.setMinimumSize(new Dimension(38, 38));
+            jbBuildingEditor.setName("");
+            jbBuildingEditor.setPreferredSize(new Dimension(38, 38));
+            jbBuildingEditor.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbBuildingEditor.addActionListener(e -> jbBuildingEditorActionPerformed(e));
+            jToolBar.add(jbBuildingEditor);
+
+            //---- jbAnimationEditor ----
+            jbAnimationEditor.setIcon(new ImageIcon(getClass().getResource("/icons/animationEditorIcon.png")));
+            jbAnimationEditor.setToolTipText("Animation editor");
+            jbAnimationEditor.setFocusable(false);
+            jbAnimationEditor.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbAnimationEditor.setMaximumSize(new Dimension(38, 38));
+            jbAnimationEditor.setMinimumSize(new Dimension(38, 38));
+            jbAnimationEditor.setName("");
+            jbAnimationEditor.setPreferredSize(new Dimension(38, 38));
+            jbAnimationEditor.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbAnimationEditor.addActionListener(e -> jbAnimationEditorActionPerformed(e));
+            jToolBar.add(jbAnimationEditor);
+            jToolBar.addSeparator();
+
+            //---- jbKeboardInfo ----
+            jbKeboardInfo.setIcon(new ImageIcon(getClass().getResource("/icons/keyboardInfoIcon.png")));
+            jbKeboardInfo.setToolTipText("Keyboard Shortcuts");
+            jbKeboardInfo.setFocusable(false);
+            jbKeboardInfo.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbKeboardInfo.setMaximumSize(new Dimension(38, 38));
+            jbKeboardInfo.setMinimumSize(new Dimension(38, 38));
+            jbKeboardInfo.setName("");
+            jbKeboardInfo.setPreferredSize(new Dimension(38, 38));
+            jbKeboardInfo.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbKeboardInfo.addActionListener(e -> jbKeboardInfoActionPerformed(e));
+            jToolBar.add(jbKeboardInfo);
+
+            //---- jbHelp ----
+            jbHelp.setIcon(new ImageIcon(getClass().getResource("/icons/helpIcon.png")));
+            jbHelp.setToolTipText("Help");
+            jbHelp.setFocusable(false);
+            jbHelp.setHorizontalTextPosition(SwingConstants.CENTER);
+            jbHelp.setMaximumSize(new Dimension(38, 38));
+            jbHelp.setMinimumSize(new Dimension(38, 38));
+            jbHelp.setName("");
+            jbHelp.setPreferredSize(new Dimension(38, 38));
+            jbHelp.setVerticalTextPosition(SwingConstants.BOTTOM);
+            jbHelp.addActionListener(e -> jbHelpActionPerformed(e));
+            jToolBar.add(jbHelp);
+        }
+        contentPane.add(jToolBar, "cell 0 0");
+
+        //======== pnlGameInfo ========
+        {
+            pnlGameInfo.setName("pnlGameInfo");
+            pnlGameInfo.setLayout(new GridBagLayout());
+            ((GridBagLayout)pnlGameInfo.getLayout()).columnWidths = new int[] {0, 0, 0};
+            ((GridBagLayout)pnlGameInfo.getLayout()).rowHeights = new int[] {0, 0, 0};
+            ((GridBagLayout)pnlGameInfo.getLayout()).columnWeights = new double[] {0.0, 1.0, 1.0E-4};
+            ((GridBagLayout)pnlGameInfo.getLayout()).rowWeights = new double[] {0.0, 0.0, 1.0E-4};
+
+            //---- lblGame ----
+            lblGame.setText("Map for: ");
+            lblGame.setName("lblGame");
+            pnlGameInfo.add(lblGame, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 5, 5), 0, 0));
+
+            //---- lblGameIcon ----
+            lblGameIcon.setText(" ");
+            lblGameIcon.setMaximumSize(new Dimension(32, 32));
+            lblGameIcon.setMinimumSize(new Dimension(32, 32));
+            lblGameIcon.setPreferredSize(new Dimension(32, 32));
+            lblGameIcon.setName("lblGameIcon");
+            lblGameIcon.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    jlGameIconMousePressed(e);
+                }
+            });
+            pnlGameInfo.add(lblGameIcon, new GridBagConstraints(1, 0, 1, 2, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 0), 0, 0));
+
+            //---- lblGameName ----
+            lblGameName.setFont(new Font("Tahoma", Font.BOLD, 11));
+            lblGameName.setText("Game Name");
+            lblGameName.setName("lblGameName");
+            pnlGameInfo.add(lblGameName, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                new Insets(0, 0, 0, 5), 0, 0));
+        }
+        contentPane.add(pnlGameInfo, "cell 1 0,grow");
+
+        //======== pnlMainWindow ========
+        {
+            pnlMainWindow.setName("pnlMainWindow");
+            pnlMainWindow.setLayout(new MigLayout(
+                "filly,hidemode 3",
+                // columns
+                "[fill]" +
+                "[grow,fill]" +
+                "[fill]" +
+                "[fill]" +
+                "[fill]" +
+                "[grow,fill]",
+                // rows
+                "[grow,fill]"));
+
+            //======== pnlLayer ========
+            {
+                pnlLayer.setBorder(new TitledBorder(null, "Layer", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, new Color(204, 102, 0)));
+                pnlLayer.setName("pnlLayer");
+
+                //======== thumbnailLayerSelector ========
+                {
+                    thumbnailLayerSelector.setName("thumbnailLayerSelector");
+
+                    GroupLayout thumbnailLayerSelectorLayout = new GroupLayout(thumbnailLayerSelector);
+                    thumbnailLayerSelector.setLayout(thumbnailLayerSelectorLayout);
+                    thumbnailLayerSelectorLayout.setHorizontalGroup(
+                        thumbnailLayerSelectorLayout.createParallelGroup()
+                            .addGap(0, 64, Short.MAX_VALUE)
+                    );
+                    thumbnailLayerSelectorLayout.setVerticalGroup(
+                        thumbnailLayerSelectorLayout.createParallelGroup()
+                            .addGap(0, 512, Short.MAX_VALUE)
+                    );
+                }
+
+                GroupLayout pnlLayerLayout = new GroupLayout(pnlLayer);
+                pnlLayer.setLayout(pnlLayerLayout);
+                pnlLayerLayout.setHorizontalGroup(
+                    pnlLayerLayout.createParallelGroup()
+                        .addGroup(pnlLayerLayout.createSequentialGroup()
+                            .addComponent(thumbnailLayerSelector, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addGap(0, 0, Short.MAX_VALUE))
+                );
+                pnlLayerLayout.setVerticalGroup(
+                    pnlLayerLayout.createParallelGroup()
+                        .addComponent(thumbnailLayerSelector, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                );
+            }
+            pnlMainWindow.add(pnlLayer, "cell 0 0,growy");
+
+            //======== pnlZ ========
+            {
+                pnlZ.setBorder(new TitledBorder(null, "Z", TitledBorder.CENTER, TitledBorder.ABOVE_TOP, null, Color.blue));
+                pnlZ.setName("pnlZ");
+
+                //======== heightSelector ========
+                {
+                    heightSelector.setPreferredSize(new Dimension(16, 496));
+                    heightSelector.setName("heightSelector");
+
+                    GroupLayout heightSelectorLayout = new GroupLayout(heightSelector);
+                    heightSelector.setLayout(heightSelectorLayout);
+                    heightSelectorLayout.setHorizontalGroup(
+                        heightSelectorLayout.createParallelGroup()
+                            .addGap(0, 16, Short.MAX_VALUE)
+                    );
+                    heightSelectorLayout.setVerticalGroup(
+                        heightSelectorLayout.createParallelGroup()
+                            .addGap(0, 496, Short.MAX_VALUE)
+                    );
+                }
+
+                GroupLayout pnlZLayout = new GroupLayout(pnlZ);
+                pnlZ.setLayout(pnlZLayout);
+                pnlZLayout.setHorizontalGroup(
+                    pnlZLayout.createParallelGroup()
+                        .addGroup(pnlZLayout.createSequentialGroup()
+                            .addComponent(heightSelector, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addGap(0, 0, Short.MAX_VALUE))
+                );
+                pnlZLayout.setVerticalGroup(
+                    pnlZLayout.createParallelGroup()
+                        .addGroup(pnlZLayout.createSequentialGroup()
+                            .addComponent(heightSelector, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addGap(0, 0, Short.MAX_VALUE))
+                );
+            }
+            pnlMainWindow.add(pnlZ, "cell 2 0,growy");
+
+            //======== pnlTileList ========
+            {
+                pnlTileList.setBorder(new TitledBorder(null, "Tile List", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
+                pnlTileList.setName("pnlTileList");
+
+                //======== jScrollPane1 ========
+                {
+                    jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                    jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+                    jScrollPane1.setName("jScrollPane1");
+
+                    //======== tileSelector ========
+                    {
+                        tileSelector.setPreferredSize(new Dimension(128, 0));
+                        tileSelector.setName("tileSelector");
+                        tileSelector.addMouseListener(new MouseAdapter() {
+                            @Override
+                            public void mousePressed(MouseEvent e) {
+                                tileSelectorMousePressed(e);
+                            }
+                        });
+
+                        GroupLayout tileSelectorLayout = new GroupLayout(tileSelector);
+                        tileSelector.setLayout(tileSelectorLayout);
+                        tileSelectorLayout.setHorizontalGroup(
+                            tileSelectorLayout.createParallelGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                        );
+                        tileSelectorLayout.setVerticalGroup(
+                            tileSelectorLayout.createParallelGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                        );
+                    }
+                    jScrollPane1.setViewportView(tileSelector);
+                }
+
+                GroupLayout pnlTileListLayout = new GroupLayout(pnlTileList);
+                pnlTileList.setLayout(pnlTileListLayout);
+                pnlTileListLayout.setHorizontalGroup(
+                    pnlTileListLayout.createParallelGroup()
+                        .addComponent(jScrollPane1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                );
+                pnlTileListLayout.setVerticalGroup(
+                    pnlTileListLayout.createParallelGroup()
+                        .addGroup(pnlTileListLayout.createSequentialGroup()
+                            .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
+                            .addGap(0, 0, 0))
+                );
+            }
+            pnlMainWindow.add(pnlTileList, "cell 3 0,growy");
+
+            //======== pnlSmartDrawing ========
+            {
+                pnlSmartDrawing.setBorder(new TitledBorder(null, "Smart Drawing", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
+                pnlSmartDrawing.setName("pnlSmartDrawing");
+
+                //======== jScrollPane2 ========
+                {
+                    jScrollPane2.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                    jScrollPane2.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+                    jScrollPane2.setName("jScrollPane2");
+
+                    //======== smartGridDisplay ========
+                    {
+                        smartGridDisplay.setName("smartGridDisplay");
+
+                        GroupLayout smartGridDisplayLayout = new GroupLayout(smartGridDisplay);
+                        smartGridDisplay.setLayout(smartGridDisplayLayout);
+                        smartGridDisplayLayout.setHorizontalGroup(
+                            smartGridDisplayLayout.createParallelGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                        );
+                        smartGridDisplayLayout.setVerticalGroup(
+                            smartGridDisplayLayout.createParallelGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                        );
+                    }
+                    jScrollPane2.setViewportView(smartGridDisplay);
+                }
+
+                GroupLayout pnlSmartDrawingLayout = new GroupLayout(pnlSmartDrawing);
+                pnlSmartDrawing.setLayout(pnlSmartDrawingLayout);
+                pnlSmartDrawingLayout.setHorizontalGroup(
+                    pnlSmartDrawingLayout.createParallelGroup()
+                        .addGroup(pnlSmartDrawingLayout.createSequentialGroup()
+                            .addComponent(jScrollPane2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addGap(0, 0, Short.MAX_VALUE))
+                );
+                pnlSmartDrawingLayout.setVerticalGroup(
+                    pnlSmartDrawingLayout.createParallelGroup()
+                        .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
+                );
+            }
+            pnlMainWindow.add(pnlSmartDrawing, "cell 4 0,growy");
+
+            //======== pnlRightPanel ========
+            {
+                pnlRightPanel.setName("pnlRightPanel");
+                pnlRightPanel.setLayout(new MigLayout(
+                    "fill,hidemode 3",
+                    // columns
+                    "[fill]",
+                    // rows
+                    "[]" +
+                    "[]" +
+                    "[]" +
+                    "[]" +
+                    "[grow]"));
+
+                //======== pnlBorderMap ========
+                {
+                    pnlBorderMap.setBorder(new TitledBorder(null, "Border Maps", TitledBorder.LEFT, TitledBorder.ABOVE_TOP));
+                    pnlBorderMap.setName("pnlBorderMap");
+
+                    //======== borderMapsDisplay ========
+                    {
+                        borderMapsDisplay.setName("borderMapsDisplay");
+
+                        GroupLayout borderMapsDisplayLayout = new GroupLayout(borderMapsDisplay);
+                        borderMapsDisplay.setLayout(borderMapsDisplayLayout);
+                        borderMapsDisplayLayout.setHorizontalGroup(
+                            borderMapsDisplayLayout.createParallelGroup()
+                                .addGap(0, 96, Short.MAX_VALUE)
+                        );
+                        borderMapsDisplayLayout.setVerticalGroup(
+                            borderMapsDisplayLayout.createParallelGroup()
+                                .addGap(0, 96, Short.MAX_VALUE)
+                        );
+                    }
+
+                    GroupLayout pnlBorderMapLayout = new GroupLayout(pnlBorderMap);
+                    pnlBorderMap.setLayout(pnlBorderMapLayout);
+                    pnlBorderMapLayout.setHorizontalGroup(
+                        pnlBorderMapLayout.createParallelGroup()
+                            .addComponent(borderMapsDisplay, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    );
+                    pnlBorderMapLayout.setVerticalGroup(
+                        pnlBorderMapLayout.createParallelGroup()
+                            .addGroup(pnlBorderMapLayout.createSequentialGroup()
+                                .addComponent(borderMapsDisplay, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                    );
+                }
+                pnlRightPanel.add(pnlBorderMap, "cell 0 0,alignx center,growx 0");
+
+                //======== pnlHeightMapAlpha ========
+                {
+                    pnlHeightMapAlpha.setBorder(new TitledBorder(null, "Height Map Alpha", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
+                    pnlHeightMapAlpha.setName("pnlHeightMapAlpha");
+
+                    //---- jsHeightMapAlpha ----
+                    jsHeightMapAlpha.setValue(99);
+                    jsHeightMapAlpha.setFocusable(false);
+                    jsHeightMapAlpha.setName("jsHeightMapAlpha");
+                    jsHeightMapAlpha.addChangeListener(e -> jsHeightMapAlphaStateChanged(e));
+
+                    GroupLayout pnlHeightMapAlphaLayout = new GroupLayout(pnlHeightMapAlpha);
+                    pnlHeightMapAlpha.setLayout(pnlHeightMapAlphaLayout);
+                    pnlHeightMapAlphaLayout.setHorizontalGroup(
+                        pnlHeightMapAlphaLayout.createParallelGroup()
+                            .addComponent(jsHeightMapAlpha, GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
+                    );
+                    pnlHeightMapAlphaLayout.setVerticalGroup(
+                        pnlHeightMapAlphaLayout.createParallelGroup()
+                            .addComponent(jsHeightMapAlpha, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    );
+                }
+                pnlRightPanel.add(pnlHeightMapAlpha, "cell 0 1");
+
+                //======== pnlBackImageAlpha ========
+                {
+                    pnlBackImageAlpha.setBorder(new TitledBorder(null, "Back Image Alpha", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
+                    pnlBackImageAlpha.setName("pnlBackImageAlpha");
+
+                    //---- jsBackImageAlpha ----
+                    jsBackImageAlpha.setFocusable(false);
+                    jsBackImageAlpha.setName("jsBackImageAlpha");
+                    jsBackImageAlpha.addChangeListener(e -> jsBackImageAlphaStateChanged(e));
+
+                    GroupLayout pnlBackImageAlphaLayout = new GroupLayout(pnlBackImageAlpha);
+                    pnlBackImageAlpha.setLayout(pnlBackImageAlphaLayout);
+                    pnlBackImageAlphaLayout.setHorizontalGroup(
+                        pnlBackImageAlphaLayout.createParallelGroup()
+                            .addComponent(jsBackImageAlpha, GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                    );
+                    pnlBackImageAlphaLayout.setVerticalGroup(
+                        pnlBackImageAlphaLayout.createParallelGroup()
+                            .addComponent(jsBackImageAlpha, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    );
+                }
+                pnlRightPanel.add(pnlBackImageAlpha, "cell 0 2");
+
+                //======== pnlMoveLayer ========
+                {
+                    pnlMoveLayer.setBorder(new TitledBorder(null, "Move Layer", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
+                    pnlMoveLayer.setName("pnlMoveLayer");
+
+                    //---- jbMoveMapUp ----
+                    jbMoveMapUp.setText("\u25b2");
+                    jbMoveMapUp.setFocusable(false);
+                    jbMoveMapUp.setName("jbMoveMapUp");
+                    jbMoveMapUp.addActionListener(e -> jbMoveMapUpActionPerformed(e));
+
+                    //---- jbMoveMapDown ----
+                    jbMoveMapDown.setText("\u25bc");
+                    jbMoveMapDown.setFocusable(false);
+                    jbMoveMapDown.setName("jbMoveMapDown");
+                    jbMoveMapDown.addActionListener(e -> jbMoveMapDownActionPerformed(e));
+
+                    //---- jbMoveMapLeft ----
+                    jbMoveMapLeft.setText("\u25c4");
+                    jbMoveMapLeft.setFocusable(false);
+                    jbMoveMapLeft.setName("jbMoveMapLeft");
+                    jbMoveMapLeft.addActionListener(e -> jbMoveMapLeftActionPerformed(e));
+
+                    //---- jbMoveMapRight ----
+                    jbMoveMapRight.setText("\u25ba");
+                    jbMoveMapRight.setFocusable(false);
+                    jbMoveMapRight.setName("jbMoveMapRight");
+                    jbMoveMapRight.addActionListener(e -> jbMoveMapRightActionPerformed(e));
+
+                    GroupLayout pnlMoveLayerLayout = new GroupLayout(pnlMoveLayer);
+                    pnlMoveLayer.setLayout(pnlMoveLayerLayout);
+                    pnlMoveLayerLayout.setHorizontalGroup(
+                        pnlMoveLayerLayout.createParallelGroup()
+                            .addComponent(jbMoveMapUp, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(pnlMoveLayerLayout.createSequentialGroup()
+                                .addComponent(jbMoveMapLeft)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jbMoveMapRight))
+                            .addComponent(jbMoveMapDown, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    );
+                    pnlMoveLayerLayout.setVerticalGroup(
+                        pnlMoveLayerLayout.createParallelGroup()
+                            .addGroup(pnlMoveLayerLayout.createSequentialGroup()
+                                .addComponent(jbMoveMapUp)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(pnlMoveLayerLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jbMoveMapLeft)
+                                    .addComponent(jbMoveMapRight))
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jbMoveMapDown))
+                    );
+                }
+                pnlRightPanel.add(pnlMoveLayer, "cell 0 3,alignx center,growx 0");
+
+                //======== pnlSelectedTile ========
+                {
+                    pnlSelectedTile.setBorder(new TitledBorder(null, "Tile Selected", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
+                    pnlSelectedTile.setName("pnlSelectedTile");
+
+                    //======== tileDisplay ========
+                    {
+                        tileDisplay.setFocusable(false);
+                        tileDisplay.setPreferredSize(new Dimension(140, 140));
+                        tileDisplay.setName("tileDisplay");
+
+                        GroupLayout tileDisplayLayout = new GroupLayout(tileDisplay);
+                        tileDisplay.setLayout(tileDisplayLayout);
+                        tileDisplayLayout.setHorizontalGroup(
+                            tileDisplayLayout.createParallelGroup()
+                                .addGap(0, 472, Short.MAX_VALUE)
+                        );
+                        tileDisplayLayout.setVerticalGroup(
+                            tileDisplayLayout.createParallelGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                        );
+                    }
+
+                    GroupLayout pnlSelectedTileLayout = new GroupLayout(pnlSelectedTile);
+                    pnlSelectedTile.setLayout(pnlSelectedTileLayout);
+                    pnlSelectedTileLayout.setHorizontalGroup(
+                        pnlSelectedTileLayout.createParallelGroup()
+                            .addComponent(tileDisplay, GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE)
+                    );
+                    pnlSelectedTileLayout.setVerticalGroup(
+                        pnlSelectedTileLayout.createParallelGroup()
+                            .addComponent(tileDisplay, GroupLayout.DEFAULT_SIZE, 341, Short.MAX_VALUE)
+                    );
+                }
+                pnlRightPanel.add(pnlSelectedTile, "cell 0 4,grow");
+            }
+            pnlMainWindow.add(pnlRightPanel, "cell 5 0");
+
+            //======== pnlMapDisplay ========
+            {
+                pnlMapDisplay.setName("pnlMapDisplay");
+                pnlMapDisplay.addComponentListener(new ComponentAdapter() {
+                    @Override
+                    public void componentResized(ComponentEvent e) {
+                        pnlMapDisplayComponentResized(e);
+                    }
+                });
+                pnlMapDisplay.setLayout(new FlowLayout());
+
+                //======== mapDisplay ========
+                {
+                    mapDisplay.setBorder(new LineBorder(new Color(102, 102, 102)));
+                    mapDisplay.setMaximumSize(new Dimension(544, 544));
+                    mapDisplay.setName("mapDisplay");
+
+                    GroupLayout mapDisplayLayout = new GroupLayout(mapDisplay);
+                    mapDisplay.setLayout(mapDisplayLayout);
+                    mapDisplayLayout.setHorizontalGroup(
+                        mapDisplayLayout.createParallelGroup()
+                            .addGap(0, 542, Short.MAX_VALUE)
+                    );
+                    mapDisplayLayout.setVerticalGroup(
+                        mapDisplayLayout.createParallelGroup()
+                            .addGap(0, 542, Short.MAX_VALUE)
+                    );
+                }
+                pnlMapDisplay.add(mapDisplay);
+            }
+            pnlMainWindow.add(pnlMapDisplay, "cell 1 0,grow");
+        }
+        contentPane.add(pnlMainWindow, "cell 0 1 2 1");
+
+        pack();
+        setLocationRelativeTo(getOwner());
+        // JFormDesigner - End of component initialization  //GEN-END:initComponents
+    }
+
+    // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
+    private JMenuBar jMenu;
+    private JMenu jMenu1;
+    private JMenuItem jmiNewMap;
+    private JMenuItem jmiOpenMap;
+    private JMenuItem jmiSaveMap;
+    private JMenuItem jmiSaveMapAs;
+    private JMenuItem jmiExportObjWithText;
+    private JMenuItem jmiExportMapAsImd;
+    private JMenuItem jmiExportMapAsNsb;
+    private JMenuItem jmiExportMapBtx;
+    private JMenuItem jmiImportTileset;
+    private JMenuItem jmiExportTileset;
+    private JMenuItem jmiExportAllTiles;
+    private JMenu jMenu2;
+    private JMenuItem jmiUndo;
+    private JMenuItem jmiRedo;
+    private JMenuItem jmiClearTiles;
+    private JMenuItem jmiUseSmartDrawing;
+    private JMenuItem jmiClearLayer;
+    private JMenuItem jmiClearAllLayers;
+    private JMenuItem jmiCopyLayer;
+    private JMenuItem jmiPasteLayer;
+    private JMenuItem jmiPasteLayerTiles;
+    private JMenuItem jmiPasteLayerHeights;
+    private JMenu jMenu3;
+    private JMenuItem jmi3dView;
+    private JMenuItem jmiTopView;
+    private JMenuItem jmiToggleHeightView;
+    private JMenuItem jmiToggleGrid;
+    private JMenuItem jmiLoadBackImg;
+    private JCheckBoxMenuItem jcbUseBackImage;
+    private JMenu jMenu4;
+    private JMenuItem jmiTilesetEditor;
+    private JMenuItem jmiCollisionEditor;
+    private JMenuItem jmiBdhcEditor;
+    private JMenuItem jmiNsbtxEditor;
+    private JMenu jmHelp;
+    private JMenuItem jmiKeyboardInfo;
+    private JMenuItem jmiAbout;
+    private JToolBar jToolBar;
+    private JButton jbNewMap;
+    private JButton jbOpenMap;
+    private JButton jbSaveMap;
+    private JButton jbExportObj;
+    private JButton jbExportImd;
+    private JButton jbExportNsb;
+    private JButton jbExportNsb1;
+    private JButton jbUndo;
+    private JButton jbRedo;
+    private JButton jb3DView;
+    private JButton jbTopView;
+    private JButton jbHeightView;
+    private JButton jbGridView;
+    private JButton jbClearTile;
+    private JButton jbUseSmartGrid;
+    private JButton jbTilelistEditor;
+    private JButton jbCollisionsEditor;
+    private JButton jbBdhcEditor;
+    private JButton jbBacksoundEditor;
+    private JButton jbNsbtxEditor1;
+    private JButton jbBuildingEditor;
+    private JButton jbAnimationEditor;
+    private JButton jbKeboardInfo;
+    private JButton jbHelp;
+    private JPanel pnlGameInfo;
+    private JLabel lblGame;
+    private JLabel lblGameIcon;
+    private JLabel lblGameName;
+    private JPanel pnlMainWindow;
+    private JPanel pnlLayer;
+    private ThumbnailLayerSelector thumbnailLayerSelector;
+    private JPanel pnlZ;
+    private HeightSelector heightSelector;
+    private JPanel pnlTileList;
+    private JScrollPane jScrollPane1;
+    private TileSelector tileSelector;
+    private JPanel pnlSmartDrawing;
+    private JScrollPane jScrollPane2;
+    private SmartGridDisplay smartGridDisplay;
+    private JPanel pnlRightPanel;
+    private JPanel pnlBorderMap;
+    private BorderMapsDisplay borderMapsDisplay;
+    private JPanel pnlHeightMapAlpha;
+    private JSlider jsHeightMapAlpha;
+    private JPanel pnlBackImageAlpha;
+    private JSlider jsBackImageAlpha;
+    private JPanel pnlMoveLayer;
+    private JButton jbMoveMapUp;
+    private JButton jbMoveMapDown;
+    private JButton jbMoveMapLeft;
+    private JButton jbMoveMapRight;
+    private JPanel pnlSelectedTile;
+    private TileDisplay tileDisplay;
+    private JPanel pnlMapDisplay;
+    private MapDisplay mapDisplay;
+    // JFormDesigner - End of variables declaration  //GEN-END:variables
 }

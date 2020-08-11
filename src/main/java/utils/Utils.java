@@ -5,8 +5,6 @@
  */
 package utils;
 
-import editor.MainFrame;
-import editor.handler.MapGrid;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -19,17 +17,14 @@ import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 import javax.imageio.ImageIO;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import editor.MainFrame;
 import tileset.Face;
-import tileset.Tile;
 
 /**
  *
@@ -40,7 +35,7 @@ public class Utils {
     public static String[] readShaderAsResource(String filename) {
         Vector lines = new Vector();
         Scanner sc;
-        sc = new Scanner(MainFrame.class.getClassLoader().getResourceAsStream(filename));
+        sc = new Scanner(Objects.requireNonNull(MainFrame.class.getClassLoader().getResourceAsStream(filename)));
 
         while (sc.hasNext()) {
             lines.addElement(sc.nextLine());

@@ -6,6 +6,7 @@
 package editor.collisions;
 
 import editor.MainFrame;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -13,11 +14,9 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Objects;
 
 /**
  *
@@ -76,7 +75,7 @@ public class CollisionTypes {
         int layerIndex = 0;
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(
-                    MainFrame.class.getClassLoader().getResourceAsStream(path)));
+                    Objects.requireNonNull(MainFrame.class.getClassLoader().getResourceAsStream(path))));
 
             String line;
             while ((line = br.readLine()) != null && collIndex < numCollisions && layerIndex < numLayers) {

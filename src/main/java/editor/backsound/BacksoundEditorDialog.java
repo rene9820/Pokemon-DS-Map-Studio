@@ -6,7 +6,6 @@
 package editor.backsound;
 
 import editor.exceptions.WrongFormatException;
-import editor.MainFrame;
 import editor.handler.MapEditorHandler;
 import editor.sound.SoundPlayer;
 import java.awt.Color;
@@ -17,7 +16,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import utils.LambdaUtils.VoidInterface;
+
 import utils.Utils;
 
 /**

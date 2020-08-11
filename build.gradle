@@ -6,9 +6,6 @@ plugins {
 repositories {
     mavenCentral()
     jcenter()
-    flatDir {
-        dirs 'libs'
-    }
 }
 
 version '1.19'
@@ -19,6 +16,7 @@ compileTestJava.options.encoding = 'UTF-8'
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "com.formdev:flatlaf:0.39"
 }
 
 jar {

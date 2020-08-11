@@ -9,7 +9,7 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
-import editor.MainFrame;
+
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import javax.imageio.ImageIO;
 
+import editor.MainFrame;
 import graphicslib3D.Point3D;
 import utils.Utils;
 import utils.Utils.IntTuple;
@@ -662,8 +663,8 @@ public class Tile {
         Texture tex = null;
 
         try {
-            tex = TextureIO.newTexture(new File(MainFrame.class
-                    .getClassLoader().getResource(textureFileName).getFile()), false);
+            tex = TextureIO.newTexture(new File(Objects.requireNonNull(MainFrame.class
+                    .getClassLoader().getResource(textureFileName)).getFile()), false);
         } catch (Exception e) {
             e.printStackTrace();
         }

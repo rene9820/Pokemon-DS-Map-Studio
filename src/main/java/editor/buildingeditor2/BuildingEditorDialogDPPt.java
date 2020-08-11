@@ -5,7 +5,6 @@
  */
 package editor.buildingeditor2;
 
-import editor.MainFrame;
 import editor.buildingeditor2.animations.AddBuildAnimationDialog;
 import editor.buildingeditor2.animations.BuildAnimation;
 import editor.buildingeditor2.animations.BuildAnimeListDPPt;
@@ -14,9 +13,7 @@ import editor.buildingeditor2.areabuild.AreaBuild;
 import editor.buildingeditor2.areadata.AreaDataDPPt;
 import editor.buildingeditor2.buildfile.Build;
 import editor.buildingeditor2.buildfile.BuildFile;
-import editor.buildingeditor2.tileset.BuildTileset;
 import editor.handler.MapEditorHandler;
-import editor.nsbtx.NsbtxLoader;
 import editor.nsbtx2.Nsbtx2;
 import editor.nsbtx2.NsbtxLoader2;
 import editor.nsbtx2.NsbtxPalette;
@@ -46,19 +43,10 @@ import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import nitroreader.nsbca.NSBCA;
 import nitroreader.nsbca.NSBCAreader;
-import nitroreader.nsbma.NSBMA;
-import nitroreader.nsbma.NSBMAreader;
-import nitroreader.nsbmd.ModelSet;
-import nitroreader.nsbmd.NSBMD;
-import nitroreader.nsbmd.NSBMDreader;
-import nitroreader.nsbmd.sbccommands.MAT;
-import nitroreader.nsbmd.sbccommands.SBCCommand;
-import nitroreader.nsbmd.sbccommands.SHP;
 import nitroreader.nsbta.NSBTA;
 import nitroreader.nsbta.NSBTAreader;
 import nitroreader.nsbtp.NSBTP;
 import nitroreader.nsbtp.NSBTPreader;
-import nitroreader.nsbtx.TexPlttSet;
 import nitroreader.shared.ByteReader;
 import nitroreader.shared.G3Dheader;
 import renderer.NitroDisplayGL;
