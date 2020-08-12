@@ -1380,7 +1380,7 @@ public class MainFrame extends JFrame {
     }
 
     public void openAboutDialog() {
-        final AboutDialog dialog = new AboutDialog(this, true);
+        final AboutDialog dialog = new AboutDialog(this);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }

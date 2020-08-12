@@ -1,0 +1,70 @@
+JFDML JFormDesigner: "7.0.2.4.305" Java: "11.0.7" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {comp jlVersionName:::p:788:p, comp label1:::p:788:p, comp label2:::p:788:p, seq {comp jLabel2:::p::p, space :5:5:p, comp jScrollPane1:::p:719:p}, seq {space :69:69:p, comp panel2:::p:719:p}, seq {space :355:355:p, comp jButton1:::p::p}}"
+			"$verticalGroup": "par l {seq {comp jlVersionName:::p:23:p, space :6:6:p, comp label1:::p::p, space :7:7:p, comp label2:::p::p, space :5:5:p, par l {comp jLabel2:::p:129:p, comp jScrollPane1:::p:129:p}, space :5:5:p, comp panel2:::p:189:p, space :6:6:p, comp jButton1:::p::p}}"
+		} ) {
+			name: "this"
+			"defaultCloseOperation": 2
+			"title": "About"
+			"resizable": false
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "jlVersionName"
+				"font": new java.awt.Font( "Tahoma", 0, 18 )
+				"horizontalAlignment": 0
+				"text": "Pokemon DS Map Studio 1.20"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label1"
+				"text": "-- by Trifindo --"
+				"horizontalAlignment": 0
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label2"
+				"text": "<html><body><a href=\"https://github.com/Trifindo/Pokemon-DS-Map-Studio\">Official website</a></body></html>"
+				"horizontalAlignment": 0
+				"cursor": new java.awt.Cursor( 12 )
+				addEvent( new FormEvent( "java.awt.event.MouseListener", "mouseClicked", "label2MouseClicked", true ) )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "jLabel2"
+				"horizontalAlignment": 0
+				"icon": new com.jformdesigner.model.SwingIcon( 0, "/icons/trifindo.gif" )
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "jScrollPane1"
+				add( new FormComponent( "javax.swing.JTextArea" ) {
+					name: "jTextArea1"
+					"editable": false
+					"columns": 20
+					"rows": 5
+					"text": "Pokemon DS Map Studio is a tool for creating gen 4 and gen 5 Pokémon games' maps,\ndesigned to be used alongside SDSME.\n\nIt doesn't require 3D modeling, instead it provides a tilemap-like interface that is automatically \nconverted in a 3D model.\nNote that this tool DOES NOT import maps from the original games, neither it can modify them.\n\nSupported games:\n- Pokemon Diamond/Pearl\n- Pokemon Platinum\n- Pokemon Heart Gold/Soul Silver\n\nNot completely working:\n- Pokemon Black/White\n- Pokemon Black 2/ White 2"
+					"lineWrap": true
+					"font": new com.jformdesigner.model.SwingFont( "TextArea.font" )
+				} )
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
+				name: "panel2"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "jLabel6"
+					"foreground": new java.awt.Color( 0, 0, 204, 255 )
+					"text": "<html>\n    <body>\n        <font color=\"orange\">JackHack96</font><br/>\n        <font color=\"blue\">Mikelan98</font><br/>\n        <font color=\"red\">Driox</font><br/>\n        <font color=\"purple\">Jiboule</font><br/>\n        <font color=\"cyan\">Nextworld</font><br/>\n        <font color=\"pink\">Jay</font><br/>\n        <font color=\"brown\">Brom</font><br/>\n        <font color=\"yellow\">AdAstra</font><br/>\n        <font color=\"gray\">René</font><br/>\n    </body>\n</html>\n"
+					"border": new javax.swing.border.TitledBorder( "Credits" )
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "Center"
+				} )
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "jButton1"
+				"text": "OK"
+				addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jButton1ActionPerformed", true ) )
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"size": new java.awt.Dimension( 790, 470 )
+			"location": new java.awt.Point( 0, 0 )
+		} )
+	}
+}
