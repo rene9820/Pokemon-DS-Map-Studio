@@ -19,11 +19,11 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JToolBar", new FormLayoutManager( class javax.swing.JToolBar ) ) {
 				name: "jToolBar"
 				"floatable": false
-				"rollover": true
 				"margin": sfield com.jformdesigner.model.FormObject NULL_VALUE
 				"maximumSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 				"minimumSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 				"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+				"rollover": true
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "jbNewMap"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/icons/newMapIcon.png" )
@@ -393,84 +393,104 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 0,grow"
 			} )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-				"$layoutConstraints": "filly,hidemode 3"
-				"$columnConstraints": "[fill][grow,fill][fill][fill][fill][grow,fill]"
-				"$rowConstraints": "[grow,fill]"
-			} ) {
-				name: "pnlMainWindow"
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-					"$horizontalGroup": "par l {seq l {comp thumbnailLayerSelector:::p::p, space :0:0:x}}"
-					"$verticalGroup": "par l {comp thumbnailLayerSelector:::p::p}"
+			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+				name: "splitPane"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "filly,hidemode 3"
+					"$columnConstraints": "[fill][grow,fill][fill][fill][fill]"
+					"$rowConstraints": "[grow,fill]"
 				} ) {
-					name: "pnlLayer"
-					"border": new javax.swing.border.TitledBorder( null, "Layer", 2, 1, null, new java.awt.Color( 204, 102, 0, 255 ) )
-					add( new FormContainer( "editor.layerselector.ThumbnailLayerSelector", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {space :0:64:x}"
-						"$verticalGroup": "par l {space :0:512:x}"
+					name: "pnlMainWindow"
+					"minimumSize": new java.awt.Dimension( 800, 550 )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+						"$horizontalGroup": "par l {seq l {comp thumbnailLayerSelector:::p::p, space :0:0:x}}"
+						"$verticalGroup": "par l {comp thumbnailLayerSelector:::p::p}"
 					} ) {
-						name: "thumbnailLayerSelector"
+						name: "pnlLayer"
+						"border": new javax.swing.border.TitledBorder( null, "Layer", 2, 1, null, new java.awt.Color( 204, 102, 0, 255 ) )
+						add( new FormContainer( "editor.layerselector.ThumbnailLayerSelector", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+							"$horizontalGroup": "par l {space :0:64:x}"
+							"$verticalGroup": "par l {space :0:512:x}"
+						} ) {
+							name: "thumbnailLayerSelector"
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 0,growy"
 					} )
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 0,growy"
-				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-					"$horizontalGroup": "par l {seq l {comp heightSelector:::p::p, space :0:0:x}}"
-					"$verticalGroup": "par l {seq l {comp heightSelector:::p::p, space :0:0:x}}"
-				} ) {
-					name: "pnlZ"
-					"border": new javax.swing.border.TitledBorder( null, "Z", 2, 1, null, new java.awt.Color( 0, 0, 255, 255 ) )
-					add( new FormContainer( "editor.heightselector.HeightSelector", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {space :0:16:x}"
-						"$verticalGroup": "par l {space :0:496:x}"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+						"$horizontalGroup": "par l {seq l {comp heightSelector:::p::p, space :0:0:x}}"
+						"$verticalGroup": "par l {seq l {comp heightSelector:::p::p, space :0:0:x}}"
 					} ) {
-						name: "heightSelector"
-						"preferredSize": new java.awt.Dimension( 16, 496 )
-					} )
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 2 0,growy"
-				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-					"$horizontalGroup": "par l {comp jScrollPane1::l:p::p}"
-					"$verticalGroup": "par l {seq l {comp jScrollPane1::::0:x, space :p:0:p}}"
-				} ) {
-					name: "pnlTileList"
-					"border": new javax.swing.border.TitledBorder( null, "Tile List", 4, 1 )
-					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-						name: "jScrollPane1"
-						"horizontalScrollBarPolicy": 31
-						"verticalScrollBarPolicy": 22
-						add( new FormContainer( "editor.tileselector.TileSelector", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-							"$horizontalGroup": "par l {space :0:0:x}"
-							"$verticalGroup": "par l {space :0:0:x}"
+						name: "pnlZ"
+						"border": new javax.swing.border.TitledBorder( null, "Z", 2, 1, null, new java.awt.Color( 0, 0, 255, 255 ) )
+						add( new FormContainer( "editor.heightselector.HeightSelector", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+							"$horizontalGroup": "par l {space :0:16:x}"
+							"$verticalGroup": "par l {space :0:496:x}"
 						} ) {
-							name: "tileSelector"
-							"preferredSize": new java.awt.Dimension( 128, 0 )
-							addEvent( new FormEvent( "java.awt.event.MouseListener", "mousePressed", "tileSelectorMousePressed", true ) )
+							name: "heightSelector"
+							"preferredSize": new java.awt.Dimension( 16, 496 )
 						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 2 0,growy"
 					} )
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 3 0,growy"
-				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-					"$horizontalGroup": "par l {seq {comp jScrollPane2:::p::p, space :0:0:x}}"
-					"$verticalGroup": "par l {comp jScrollPane2::l::0:x}"
-				} ) {
-					name: "pnlSmartDrawing"
-					"border": new javax.swing.border.TitledBorder( null, "Smart Drawing", 4, 1 )
-					add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-						name: "jScrollPane2"
-						"horizontalScrollBarPolicy": 31
-						"verticalScrollBarPolicy": 22
-						add( new FormContainer( "editor.smartdrawing.SmartGridDisplay", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-							"$horizontalGroup": "par l {space :0:0:x}"
-							"$verticalGroup": "par l {space :0:0:x}"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+						"$horizontalGroup": "par l {comp jScrollPane1::l:p::p}"
+						"$verticalGroup": "par l {seq l {comp jScrollPane1::::0:x, space :p:0:p}}"
+					} ) {
+						name: "pnlTileList"
+						"border": new javax.swing.border.TitledBorder( null, "Tile List", 4, 1 )
+						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+							name: "jScrollPane1"
+							"horizontalScrollBarPolicy": 31
+							"verticalScrollBarPolicy": 22
+							add( new FormContainer( "editor.tileselector.TileSelector", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+								"$horizontalGroup": "par l {space :0:0:x}"
+								"$verticalGroup": "par l {space :0:0:x}"
+							} ) {
+								name: "tileSelector"
+								"preferredSize": new java.awt.Dimension( 128, 0 )
+								addEvent( new FormEvent( "java.awt.event.MouseListener", "mousePressed", "tileSelectorMousePressed", true ) )
+							} )
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 3 0,growy"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+						"$horizontalGroup": "par l {seq {comp jScrollPane2:::p::p, space :0:0:x}}"
+						"$verticalGroup": "par l {comp jScrollPane2::l::0:x}"
+					} ) {
+						name: "pnlSmartDrawing"
+						"border": new javax.swing.border.TitledBorder( null, "Smart Drawing", 4, 1 )
+						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+							name: "jScrollPane2"
+							"horizontalScrollBarPolicy": 31
+							"verticalScrollBarPolicy": 22
+							add( new FormContainer( "editor.smartdrawing.SmartGridDisplay", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+								"$horizontalGroup": "par l {space :0:0:x}"
+								"$verticalGroup": "par l {space :0:0:x}"
+							} ) {
+								name: "smartGridDisplay"
+							} )
+						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 4 0,growy"
+					} )
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+						name: "pnlMapDisplay"
+						addEvent( new FormEvent( "java.awt.event.ComponentListener", "componentResized", "pnlMapDisplayComponentResized", true ) )
+						add( new FormContainer( "editor.MapDisplay", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+							"$horizontalGroup": "par l {space :0:542:x}"
+							"$verticalGroup": "par l {space :0:542:x}"
 						} ) {
-							name: "smartGridDisplay"
+							name: "mapDisplay"
+							"border": new javax.swing.border.LineBorder( new java.awt.Color( 102, 102, 102, 255 ), 1, false )
+							"maximumSize": new java.awt.Dimension( 544, 544 )
 						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 0,grow"
 					} )
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 4 0,growy"
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "left"
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 					"$layoutConstraints": "fill,hidemode 3"
@@ -478,6 +498,7 @@ new FormModel {
 					"$rowConstraints": "[][][][][grow]"
 				} ) {
 					name: "pnlRightPanel"
+					"preferredSize": new java.awt.Dimension( 400, 818 )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 						"$horizontalGroup": "par l {comp borderMapsDisplay:::p::p}"
 						"$verticalGroup": "par l {seq l {comp borderMapsDisplay:::p::p, space :0:0:x}}"
@@ -509,7 +530,7 @@ new FormModel {
 						"value": "cell 0 1"
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {comp jsBackImageAlpha::l::472:x}"
+						"$horizontalGroup": "par l {comp jsBackImageAlpha::l::517:x}"
 						"$verticalGroup": "par l {comp jsBackImageAlpha::l:p::p}"
 					} ) {
 						name: "pnlBackImageAlpha"
@@ -522,9 +543,10 @@ new FormModel {
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 0 2"
 					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {comp jbMoveMapUp::t:::x, seq l {comp jbMoveMapLeft:::p::p, space :::x, comp jbMoveMapRight:::p::p}, comp jbMoveMapDown::t:::x}"
-						"$verticalGroup": "par l {seq l {comp jbMoveMapUp:::p::p, space :::p, par b {comp jbMoveMapLeft::b:p::p, comp jbMoveMapRight::b:p::p}, space :::p, comp jbMoveMapDown:::p::p}}"
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+						"$layoutConstraints": "insets 0,hidemode 3,gap 5 5"
+						"$columnConstraints": "[fill][fill][fill]"
+						"$rowConstraints": "[fill][fill][fill]"
 					} ) {
 						name: "pnlMoveLayer"
 						"border": new javax.swing.border.TitledBorder( null, "Move Layer", 4, 1 )
@@ -533,36 +555,44 @@ new FormModel {
 							"text": "▲"
 							"focusable": false
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapUpActionPerformed", true ) )
-						} )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "jbMoveMapDown"
-							"text": "▼"
-							"focusable": false
-							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapDownActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 0"
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jbMoveMapLeft"
 							"text": "◄"
 							"focusable": false
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapLeftActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 1"
+						} )
+						add( new FormComponent( "javax.swing.JButton" ) {
+							name: "jbMoveMapDown"
+							"text": "▼"
+							"focusable": false
+							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapDownActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 2"
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jbMoveMapRight"
 							"text": "►"
 							"focusable": false
 							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapRightActionPerformed", true ) )
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 1"
 						} )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 0 3,alignx center,growx 0"
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {comp tileDisplay::l::472:x}"
-						"$verticalGroup": "par l {comp tileDisplay::l::341:x}"
+						"$horizontalGroup": "par l {comp tileDisplay::l::517:x}"
+						"$verticalGroup": "par l {comp tileDisplay::l::408:x}"
 					} ) {
 						name: "pnlSelectedTile"
 						"border": new javax.swing.border.TitledBorder( null, "Tile Selected", 4, 1 )
 						add( new FormContainer( "editor.tileseteditor.TileDisplay", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-							"$horizontalGroup": "par l {space :0:472:x}"
+							"$horizontalGroup": "par l {space :0:517:x}"
 							"$verticalGroup": "par l {space :0:0:x}"
 						} ) {
 							name: "tileDisplay"
@@ -572,22 +602,8 @@ new FormModel {
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 0 4,grow"
 					} )
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 5 0"
-				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
-					name: "pnlMapDisplay"
-					addEvent( new FormEvent( "java.awt.event.ComponentListener", "componentResized", "pnlMapDisplayComponentResized", true ) )
-					add( new FormContainer( "editor.MapDisplay", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {space :0:542:x}"
-						"$verticalGroup": "par l {space :0:542:x}"
-					} ) {
-						name: "mapDisplay"
-						"border": new javax.swing.border.LineBorder( new java.awt.Color( 102, 102, 102, 255 ), 1, false )
-						"maximumSize": new java.awt.Dimension( 544, 544 )
-					} )
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 1 0,grow"
+				}, new FormLayoutConstraints( class java.lang.String ) {
+					"value": "right"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 1 2 1"
@@ -808,7 +824,7 @@ new FormModel {
 				} )
 			}
 		}, new FormLayoutConstraints( null ) {
-			"size": new java.awt.Dimension( 1430, 825 )
+			"size": new java.awt.Dimension( 1495, 920 )
 			"location": new java.awt.Point( 0, 0 )
 		} )
 	}
