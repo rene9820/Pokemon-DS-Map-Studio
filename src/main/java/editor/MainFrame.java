@@ -1582,6 +1582,8 @@ public class MainFrame extends JFrame {
         pnlMapDisplay = new JPanel();
         mapDisplay = new MapDisplay();
         pnlRightPanel = new JPanel();
+        rightSplitPane = new JSplitPane();
+        pnlTopRight = new JPanel();
         pnlBorderMap = new JPanel();
         borderMapsDisplay = new BorderMapsDisplay();
         pnlHeightMapAlpha = new JPanel();
@@ -1593,6 +1595,7 @@ public class MainFrame extends JFrame {
         jbMoveMapLeft = new JButton();
         jbMoveMapDown = new JButton();
         jbMoveMapRight = new JButton();
+        vSpacer1 = new JPanel(null);
         pnlSelectedTile = new JPanel();
         tileDisplay = new TileDisplay();
 
@@ -2245,6 +2248,7 @@ public class MainFrame extends JFrame {
 
         //======== splitPane ========
         {
+            splitPane.setResizeWeight(0.6);
             splitPane.setName("splitPane");
 
             //======== pnlMainWindow ========
@@ -2473,177 +2477,200 @@ public class MainFrame extends JFrame {
                 pnlRightPanel.setLayout(new MigLayout(
                     "fill,hidemode 3",
                     // columns
-                    "[fill]",
+                    "[grow,fill]",
                     // rows
-                    "[]" +
-                    "[]" +
-                    "[]" +
-                    "[]" +
-                    "[grow]"));
+                    "[grow,fill]"));
 
-                //======== pnlBorderMap ========
+                //======== rightSplitPane ========
                 {
-                    pnlBorderMap.setBorder(new TitledBorder(null, "Border Maps", TitledBorder.LEFT, TitledBorder.ABOVE_TOP));
-                    pnlBorderMap.setName("pnlBorderMap");
+                    rightSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+                    rightSplitPane.setName("rightSplitPane");
 
-                    //======== borderMapsDisplay ========
+                    //======== pnlTopRight ========
                     {
-                        borderMapsDisplay.setName("borderMapsDisplay");
+                        pnlTopRight.setName("pnlTopRight");
+                        pnlTopRight.setLayout(new MigLayout(
+                            "insets 0,hidemode 3",
+                            // columns
+                            "[grow,fill]",
+                            // rows
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[fill]" +
+                            "[grow,fill]"));
 
-                        GroupLayout borderMapsDisplayLayout = new GroupLayout(borderMapsDisplay);
-                        borderMapsDisplay.setLayout(borderMapsDisplayLayout);
-                        borderMapsDisplayLayout.setHorizontalGroup(
-                            borderMapsDisplayLayout.createParallelGroup()
-                                .addGap(0, 96, Short.MAX_VALUE)
+                        //======== pnlBorderMap ========
+                        {
+                            pnlBorderMap.setBorder(new TitledBorder(null, "Border Maps", TitledBorder.LEFT, TitledBorder.ABOVE_TOP));
+                            pnlBorderMap.setName("pnlBorderMap");
+
+                            //======== borderMapsDisplay ========
+                            {
+                                borderMapsDisplay.setName("borderMapsDisplay");
+
+                                GroupLayout borderMapsDisplayLayout = new GroupLayout(borderMapsDisplay);
+                                borderMapsDisplay.setLayout(borderMapsDisplayLayout);
+                                borderMapsDisplayLayout.setHorizontalGroup(
+                                    borderMapsDisplayLayout.createParallelGroup()
+                                        .addGap(0, 96, Short.MAX_VALUE)
+                                );
+                                borderMapsDisplayLayout.setVerticalGroup(
+                                    borderMapsDisplayLayout.createParallelGroup()
+                                        .addGap(0, 96, Short.MAX_VALUE)
+                                );
+                            }
+
+                            GroupLayout pnlBorderMapLayout = new GroupLayout(pnlBorderMap);
+                            pnlBorderMap.setLayout(pnlBorderMapLayout);
+                            pnlBorderMapLayout.setHorizontalGroup(
+                                pnlBorderMapLayout.createParallelGroup()
+                                    .addComponent(borderMapsDisplay, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            );
+                            pnlBorderMapLayout.setVerticalGroup(
+                                pnlBorderMapLayout.createParallelGroup()
+                                    .addGroup(pnlBorderMapLayout.createSequentialGroup()
+                                        .addComponent(borderMapsDisplay, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                        .addGap(0, 0, Short.MAX_VALUE))
+                            );
+                        }
+                        pnlTopRight.add(pnlBorderMap, "cell 0 0,alignx center,growx 0");
+
+                        //======== pnlHeightMapAlpha ========
+                        {
+                            pnlHeightMapAlpha.setBorder(new TitledBorder(null, "Height Map Alpha", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
+                            pnlHeightMapAlpha.setName("pnlHeightMapAlpha");
+
+                            //---- jsHeightMapAlpha ----
+                            jsHeightMapAlpha.setValue(99);
+                            jsHeightMapAlpha.setFocusable(false);
+                            jsHeightMapAlpha.setName("jsHeightMapAlpha");
+                            jsHeightMapAlpha.addChangeListener(e -> jsHeightMapAlphaStateChanged(e));
+
+                            GroupLayout pnlHeightMapAlphaLayout = new GroupLayout(pnlHeightMapAlpha);
+                            pnlHeightMapAlpha.setLayout(pnlHeightMapAlphaLayout);
+                            pnlHeightMapAlphaLayout.setHorizontalGroup(
+                                pnlHeightMapAlphaLayout.createParallelGroup()
+                                    .addComponent(jsHeightMapAlpha, GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
+                            );
+                            pnlHeightMapAlphaLayout.setVerticalGroup(
+                                pnlHeightMapAlphaLayout.createParallelGroup()
+                                    .addComponent(jsHeightMapAlpha, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            );
+                        }
+                        pnlTopRight.add(pnlHeightMapAlpha, "cell 0 1");
+
+                        //======== pnlBackImageAlpha ========
+                        {
+                            pnlBackImageAlpha.setBorder(new TitledBorder(null, "Back Image Alpha", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
+                            pnlBackImageAlpha.setName("pnlBackImageAlpha");
+
+                            //---- jsBackImageAlpha ----
+                            jsBackImageAlpha.setFocusable(false);
+                            jsBackImageAlpha.setName("jsBackImageAlpha");
+                            jsBackImageAlpha.addChangeListener(e -> jsBackImageAlphaStateChanged(e));
+
+                            GroupLayout pnlBackImageAlphaLayout = new GroupLayout(pnlBackImageAlpha);
+                            pnlBackImageAlpha.setLayout(pnlBackImageAlphaLayout);
+                            pnlBackImageAlphaLayout.setHorizontalGroup(
+                                pnlBackImageAlphaLayout.createParallelGroup()
+                                    .addComponent(jsBackImageAlpha, GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
+                            );
+                            pnlBackImageAlphaLayout.setVerticalGroup(
+                                pnlBackImageAlphaLayout.createParallelGroup()
+                                    .addComponent(jsBackImageAlpha, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            );
+                        }
+                        pnlTopRight.add(pnlBackImageAlpha, "cell 0 2");
+
+                        //======== pnlMoveLayer ========
+                        {
+                            pnlMoveLayer.setBorder(new TitledBorder(null, "Move Layer", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
+                            pnlMoveLayer.setName("pnlMoveLayer");
+                            pnlMoveLayer.setLayout(new MigLayout(
+                                "insets 0,hidemode 3,gap 5 5",
+                                // columns
+                                "[fill]" +
+                                "[fill]" +
+                                "[fill]",
+                                // rows
+                                "[fill]" +
+                                "[fill]" +
+                                "[fill]"));
+
+                            //---- jbMoveMapUp ----
+                            jbMoveMapUp.setText("\u25b2");
+                            jbMoveMapUp.setFocusable(false);
+                            jbMoveMapUp.setName("jbMoveMapUp");
+                            jbMoveMapUp.addActionListener(e -> jbMoveMapUpActionPerformed(e));
+                            pnlMoveLayer.add(jbMoveMapUp, "cell 1 0");
+
+                            //---- jbMoveMapLeft ----
+                            jbMoveMapLeft.setText("\u25c4");
+                            jbMoveMapLeft.setFocusable(false);
+                            jbMoveMapLeft.setName("jbMoveMapLeft");
+                            jbMoveMapLeft.addActionListener(e -> jbMoveMapLeftActionPerformed(e));
+                            pnlMoveLayer.add(jbMoveMapLeft, "cell 0 1");
+
+                            //---- jbMoveMapDown ----
+                            jbMoveMapDown.setText("\u25bc");
+                            jbMoveMapDown.setFocusable(false);
+                            jbMoveMapDown.setName("jbMoveMapDown");
+                            jbMoveMapDown.addActionListener(e -> jbMoveMapDownActionPerformed(e));
+                            pnlMoveLayer.add(jbMoveMapDown, "cell 1 2");
+
+                            //---- jbMoveMapRight ----
+                            jbMoveMapRight.setText("\u25ba");
+                            jbMoveMapRight.setFocusable(false);
+                            jbMoveMapRight.setName("jbMoveMapRight");
+                            jbMoveMapRight.addActionListener(e -> jbMoveMapRightActionPerformed(e));
+                            pnlMoveLayer.add(jbMoveMapRight, "cell 2 1");
+                        }
+                        pnlTopRight.add(pnlMoveLayer, "cell 0 3,alignx center,growx 0");
+
+                        //---- vSpacer1 ----
+                        vSpacer1.setName("vSpacer1");
+                        pnlTopRight.add(vSpacer1, "cell 0 4");
+                    }
+                    rightSplitPane.setTopComponent(pnlTopRight);
+
+                    //======== pnlSelectedTile ========
+                    {
+                        pnlSelectedTile.setBorder(new TitledBorder(null, "Tile Selected", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
+                        pnlSelectedTile.setName("pnlSelectedTile");
+
+                        //======== tileDisplay ========
+                        {
+                            tileDisplay.setFocusable(false);
+                            tileDisplay.setPreferredSize(new Dimension(140, 140));
+                            tileDisplay.setName("tileDisplay");
+
+                            GroupLayout tileDisplayLayout = new GroupLayout(tileDisplay);
+                            tileDisplay.setLayout(tileDisplayLayout);
+                            tileDisplayLayout.setHorizontalGroup(
+                                tileDisplayLayout.createParallelGroup()
+                                    .addGap(0, 446, Short.MAX_VALUE)
+                            );
+                            tileDisplayLayout.setVerticalGroup(
+                                tileDisplayLayout.createParallelGroup()
+                                    .addGap(0, 0, Short.MAX_VALUE)
+                            );
+                        }
+
+                        GroupLayout pnlSelectedTileLayout = new GroupLayout(pnlSelectedTile);
+                        pnlSelectedTile.setLayout(pnlSelectedTileLayout);
+                        pnlSelectedTileLayout.setHorizontalGroup(
+                            pnlSelectedTileLayout.createParallelGroup()
+                                .addComponent(tileDisplay, GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
                         );
-                        borderMapsDisplayLayout.setVerticalGroup(
-                            borderMapsDisplayLayout.createParallelGroup()
-                                .addGap(0, 96, Short.MAX_VALUE)
+                        pnlSelectedTileLayout.setVerticalGroup(
+                            pnlSelectedTileLayout.createParallelGroup()
+                                .addComponent(tileDisplay, GroupLayout.DEFAULT_SIZE, 386, Short.MAX_VALUE)
                         );
                     }
-
-                    GroupLayout pnlBorderMapLayout = new GroupLayout(pnlBorderMap);
-                    pnlBorderMap.setLayout(pnlBorderMapLayout);
-                    pnlBorderMapLayout.setHorizontalGroup(
-                        pnlBorderMapLayout.createParallelGroup()
-                            .addComponent(borderMapsDisplay, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    );
-                    pnlBorderMapLayout.setVerticalGroup(
-                        pnlBorderMapLayout.createParallelGroup()
-                            .addGroup(pnlBorderMapLayout.createSequentialGroup()
-                                .addComponent(borderMapsDisplay, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                    );
+                    rightSplitPane.setBottomComponent(pnlSelectedTile);
                 }
-                pnlRightPanel.add(pnlBorderMap, "cell 0 0,alignx center,growx 0");
-
-                //======== pnlHeightMapAlpha ========
-                {
-                    pnlHeightMapAlpha.setBorder(new TitledBorder(null, "Height Map Alpha", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
-                    pnlHeightMapAlpha.setName("pnlHeightMapAlpha");
-
-                    //---- jsHeightMapAlpha ----
-                    jsHeightMapAlpha.setValue(99);
-                    jsHeightMapAlpha.setFocusable(false);
-                    jsHeightMapAlpha.setName("jsHeightMapAlpha");
-                    jsHeightMapAlpha.addChangeListener(e -> jsHeightMapAlphaStateChanged(e));
-
-                    GroupLayout pnlHeightMapAlphaLayout = new GroupLayout(pnlHeightMapAlpha);
-                    pnlHeightMapAlpha.setLayout(pnlHeightMapAlphaLayout);
-                    pnlHeightMapAlphaLayout.setHorizontalGroup(
-                        pnlHeightMapAlphaLayout.createParallelGroup()
-                            .addComponent(jsHeightMapAlpha, GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
-                    );
-                    pnlHeightMapAlphaLayout.setVerticalGroup(
-                        pnlHeightMapAlphaLayout.createParallelGroup()
-                            .addComponent(jsHeightMapAlpha, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    );
-                }
-                pnlRightPanel.add(pnlHeightMapAlpha, "cell 0 1");
-
-                //======== pnlBackImageAlpha ========
-                {
-                    pnlBackImageAlpha.setBorder(new TitledBorder(null, "Back Image Alpha", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
-                    pnlBackImageAlpha.setName("pnlBackImageAlpha");
-
-                    //---- jsBackImageAlpha ----
-                    jsBackImageAlpha.setFocusable(false);
-                    jsBackImageAlpha.setName("jsBackImageAlpha");
-                    jsBackImageAlpha.addChangeListener(e -> jsBackImageAlphaStateChanged(e));
-
-                    GroupLayout pnlBackImageAlphaLayout = new GroupLayout(pnlBackImageAlpha);
-                    pnlBackImageAlpha.setLayout(pnlBackImageAlphaLayout);
-                    pnlBackImageAlphaLayout.setHorizontalGroup(
-                        pnlBackImageAlphaLayout.createParallelGroup()
-                            .addComponent(jsBackImageAlpha, GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                    );
-                    pnlBackImageAlphaLayout.setVerticalGroup(
-                        pnlBackImageAlphaLayout.createParallelGroup()
-                            .addComponent(jsBackImageAlpha, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    );
-                }
-                pnlRightPanel.add(pnlBackImageAlpha, "cell 0 2");
-
-                //======== pnlMoveLayer ========
-                {
-                    pnlMoveLayer.setBorder(new TitledBorder(null, "Move Layer", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
-                    pnlMoveLayer.setName("pnlMoveLayer");
-                    pnlMoveLayer.setLayout(new MigLayout(
-                        "insets 0,hidemode 3,gap 5 5",
-                        // columns
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]",
-                        // rows
-                        "[fill]" +
-                        "[fill]" +
-                        "[fill]"));
-
-                    //---- jbMoveMapUp ----
-                    jbMoveMapUp.setText("\u25b2");
-                    jbMoveMapUp.setFocusable(false);
-                    jbMoveMapUp.setName("jbMoveMapUp");
-                    jbMoveMapUp.addActionListener(e -> jbMoveMapUpActionPerformed(e));
-                    pnlMoveLayer.add(jbMoveMapUp, "cell 1 0");
-
-                    //---- jbMoveMapLeft ----
-                    jbMoveMapLeft.setText("\u25c4");
-                    jbMoveMapLeft.setFocusable(false);
-                    jbMoveMapLeft.setName("jbMoveMapLeft");
-                    jbMoveMapLeft.addActionListener(e -> jbMoveMapLeftActionPerformed(e));
-                    pnlMoveLayer.add(jbMoveMapLeft, "cell 0 1");
-
-                    //---- jbMoveMapDown ----
-                    jbMoveMapDown.setText("\u25bc");
-                    jbMoveMapDown.setFocusable(false);
-                    jbMoveMapDown.setName("jbMoveMapDown");
-                    jbMoveMapDown.addActionListener(e -> jbMoveMapDownActionPerformed(e));
-                    pnlMoveLayer.add(jbMoveMapDown, "cell 1 2");
-
-                    //---- jbMoveMapRight ----
-                    jbMoveMapRight.setText("\u25ba");
-                    jbMoveMapRight.setFocusable(false);
-                    jbMoveMapRight.setName("jbMoveMapRight");
-                    jbMoveMapRight.addActionListener(e -> jbMoveMapRightActionPerformed(e));
-                    pnlMoveLayer.add(jbMoveMapRight, "cell 2 1");
-                }
-                pnlRightPanel.add(pnlMoveLayer, "cell 0 3,alignx center,growx 0");
-
-                //======== pnlSelectedTile ========
-                {
-                    pnlSelectedTile.setBorder(new TitledBorder(null, "Tile Selected", TitledBorder.LEADING, TitledBorder.ABOVE_TOP));
-                    pnlSelectedTile.setName("pnlSelectedTile");
-
-                    //======== tileDisplay ========
-                    {
-                        tileDisplay.setFocusable(false);
-                        tileDisplay.setPreferredSize(new Dimension(140, 140));
-                        tileDisplay.setName("tileDisplay");
-
-                        GroupLayout tileDisplayLayout = new GroupLayout(tileDisplay);
-                        tileDisplay.setLayout(tileDisplayLayout);
-                        tileDisplayLayout.setHorizontalGroup(
-                            tileDisplayLayout.createParallelGroup()
-                                .addGap(0, 517, Short.MAX_VALUE)
-                        );
-                        tileDisplayLayout.setVerticalGroup(
-                            tileDisplayLayout.createParallelGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                        );
-                    }
-
-                    GroupLayout pnlSelectedTileLayout = new GroupLayout(pnlSelectedTile);
-                    pnlSelectedTile.setLayout(pnlSelectedTileLayout);
-                    pnlSelectedTileLayout.setHorizontalGroup(
-                        pnlSelectedTileLayout.createParallelGroup()
-                            .addComponent(tileDisplay, GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
-                    );
-                    pnlSelectedTileLayout.setVerticalGroup(
-                        pnlSelectedTileLayout.createParallelGroup()
-                            .addComponent(tileDisplay, GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
-                    );
-                }
-                pnlRightPanel.add(pnlSelectedTile, "cell 0 4,grow");
+                pnlRightPanel.add(rightSplitPane, "cell 0 0");
             }
             splitPane.setRightComponent(pnlRightPanel);
         }
@@ -2738,6 +2765,8 @@ public class MainFrame extends JFrame {
     private JPanel pnlMapDisplay;
     private MapDisplay mapDisplay;
     private JPanel pnlRightPanel;
+    private JSplitPane rightSplitPane;
+    private JPanel pnlTopRight;
     private JPanel pnlBorderMap;
     private BorderMapsDisplay borderMapsDisplay;
     private JPanel pnlHeightMapAlpha;
@@ -2749,6 +2778,7 @@ public class MainFrame extends JFrame {
     private JButton jbMoveMapLeft;
     private JButton jbMoveMapDown;
     private JButton jbMoveMapRight;
+    private JPanel vSpacer1;
     private JPanel pnlSelectedTile;
     private TileDisplay tileDisplay;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

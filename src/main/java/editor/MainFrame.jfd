@@ -395,6 +395,7 @@ new FormModel {
 			} )
 			add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
 				name: "splitPane"
+				"resizeWeight": 0.6
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 					"$layoutConstraints": "filly,hidemode 3"
 					"$columnConstraints": "[fill][grow,fill][fill][fill][fill]"
@@ -494,113 +495,133 @@ new FormModel {
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 					"$layoutConstraints": "fill,hidemode 3"
-					"$columnConstraints": "[fill]"
-					"$rowConstraints": "[][][][][grow]"
+					"$columnConstraints": "[grow,fill]"
+					"$rowConstraints": "[grow,fill]"
 				} ) {
 					name: "pnlRightPanel"
 					"preferredSize": new java.awt.Dimension( 400, 818 )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {comp borderMapsDisplay:::p::p}"
-						"$verticalGroup": "par l {seq l {comp borderMapsDisplay:::p::p, space :0:0:x}}"
-					} ) {
-						name: "pnlBorderMap"
-						"border": new javax.swing.border.TitledBorder( null, "Border Maps", 1, 1 )
-						add( new FormContainer( "editor.bordermap.BorderMapsDisplay", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-							"$horizontalGroup": "par l {space :0:96:x}"
-							"$verticalGroup": "par l {space :0:96:x}"
+					add( new FormContainer( "javax.swing.JSplitPane", new FormLayoutManager( class javax.swing.JSplitPane ) ) {
+						name: "rightSplitPane"
+						"orientation": 0
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+							"$layoutConstraints": "insets 0,hidemode 3"
+							"$columnConstraints": "[grow,fill]"
+							"$rowConstraints": "[fill][fill][fill][fill][grow,fill]"
 						} ) {
-							name: "borderMapsDisplay"
+							name: "pnlTopRight"
+							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+								"$horizontalGroup": "par l {comp borderMapsDisplay:::p::p}"
+								"$verticalGroup": "par l {seq l {comp borderMapsDisplay:::p::p, space :0:0:x}}"
+							} ) {
+								name: "pnlBorderMap"
+								"border": new javax.swing.border.TitledBorder( null, "Border Maps", 1, 1 )
+								add( new FormContainer( "editor.bordermap.BorderMapsDisplay", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+									"$horizontalGroup": "par l {space :0:96:x}"
+									"$verticalGroup": "par l {space :0:96:x}"
+								} ) {
+									name: "borderMapsDisplay"
+								} )
+							}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+								"value": "cell 0 0,alignx center,growx 0"
+							} )
+							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+								"$horizontalGroup": "par l {comp jsHeightMapAlpha::::0:x}"
+								"$verticalGroup": "par l {comp jsHeightMapAlpha:::p::p}"
+							} ) {
+								name: "pnlHeightMapAlpha"
+								"border": new javax.swing.border.TitledBorder( null, "Height Map Alpha", 4, 1 )
+								add( new FormComponent( "javax.swing.JSlider" ) {
+									name: "jsHeightMapAlpha"
+									"value": 99
+									"focusable": false
+									addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "jsHeightMapAlphaStateChanged", true ) )
+								} )
+							}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+								"value": "cell 0 1"
+							} )
+							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+								"$horizontalGroup": "par l {comp jsBackImageAlpha::l::446:x}"
+								"$verticalGroup": "par l {comp jsBackImageAlpha::l:p::p}"
+							} ) {
+								name: "pnlBackImageAlpha"
+								"border": new javax.swing.border.TitledBorder( null, "Back Image Alpha", 4, 1 )
+								add( new FormComponent( "javax.swing.JSlider" ) {
+									name: "jsBackImageAlpha"
+									"focusable": false
+									addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "jsBackImageAlphaStateChanged", true ) )
+								} )
+							}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+								"value": "cell 0 2"
+							} )
+							add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+								"$layoutConstraints": "insets 0,hidemode 3,gap 5 5"
+								"$columnConstraints": "[fill][fill][fill]"
+								"$rowConstraints": "[fill][fill][fill]"
+							} ) {
+								name: "pnlMoveLayer"
+								"border": new javax.swing.border.TitledBorder( null, "Move Layer", 4, 1 )
+								add( new FormComponent( "javax.swing.JButton" ) {
+									name: "jbMoveMapUp"
+									"text": "▲"
+									"focusable": false
+									addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapUpActionPerformed", true ) )
+								}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+									"value": "cell 1 0"
+								} )
+								add( new FormComponent( "javax.swing.JButton" ) {
+									name: "jbMoveMapLeft"
+									"text": "◄"
+									"focusable": false
+									addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapLeftActionPerformed", true ) )
+								}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+									"value": "cell 0 1"
+								} )
+								add( new FormComponent( "javax.swing.JButton" ) {
+									name: "jbMoveMapDown"
+									"text": "▼"
+									"focusable": false
+									addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapDownActionPerformed", true ) )
+								}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+									"value": "cell 1 2"
+								} )
+								add( new FormComponent( "javax.swing.JButton" ) {
+									name: "jbMoveMapRight"
+									"text": "►"
+									"focusable": false
+									addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapRightActionPerformed", true ) )
+								}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+									"value": "cell 2 1"
+								} )
+							}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+								"value": "cell 0 3,alignx center,growx 0"
+							} )
+							add( new FormComponent( "com.jformdesigner.designer.wrapper.VSpacer" ) {
+								name: "vSpacer1"
+							}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+								"value": "cell 0 4"
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "left"
 						} )
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 0,alignx center,growx 0"
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {comp jsHeightMapAlpha::::0:x}"
-						"$verticalGroup": "par l {comp jsHeightMapAlpha:::p::p}"
-					} ) {
-						name: "pnlHeightMapAlpha"
-						"border": new javax.swing.border.TitledBorder( null, "Height Map Alpha", 4, 1 )
-						add( new FormComponent( "javax.swing.JSlider" ) {
-							name: "jsHeightMapAlpha"
-							"value": 99
-							"focusable": false
-							addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "jsHeightMapAlphaStateChanged", true ) )
-						} )
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 1"
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {comp jsBackImageAlpha::l::517:x}"
-						"$verticalGroup": "par l {comp jsBackImageAlpha::l:p::p}"
-					} ) {
-						name: "pnlBackImageAlpha"
-						"border": new javax.swing.border.TitledBorder( null, "Back Image Alpha", 4, 1 )
-						add( new FormComponent( "javax.swing.JSlider" ) {
-							name: "jsBackImageAlpha"
-							"focusable": false
-							addEvent( new FormEvent( "javax.swing.event.ChangeListener", "stateChanged", "jsBackImageAlphaStateChanged", true ) )
-						} )
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 2"
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-						"$layoutConstraints": "insets 0,hidemode 3,gap 5 5"
-						"$columnConstraints": "[fill][fill][fill]"
-						"$rowConstraints": "[fill][fill][fill]"
-					} ) {
-						name: "pnlMoveLayer"
-						"border": new javax.swing.border.TitledBorder( null, "Move Layer", 4, 1 )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "jbMoveMapUp"
-							"text": "▲"
-							"focusable": false
-							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapUpActionPerformed", true ) )
-						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-							"value": "cell 1 0"
-						} )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "jbMoveMapLeft"
-							"text": "◄"
-							"focusable": false
-							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapLeftActionPerformed", true ) )
-						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-							"value": "cell 0 1"
-						} )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "jbMoveMapDown"
-							"text": "▼"
-							"focusable": false
-							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapDownActionPerformed", true ) )
-						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-							"value": "cell 1 2"
-						} )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "jbMoveMapRight"
-							"text": "►"
-							"focusable": false
-							addEvent( new FormEvent( "java.awt.event.ActionListener", "actionPerformed", "jbMoveMapRightActionPerformed", true ) )
-						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-							"value": "cell 2 1"
-						} )
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 3,alignx center,growx 0"
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-						"$horizontalGroup": "par l {comp tileDisplay::l::517:x}"
-						"$verticalGroup": "par l {comp tileDisplay::l::408:x}"
-					} ) {
-						name: "pnlSelectedTile"
-						"border": new javax.swing.border.TitledBorder( null, "Tile Selected", 4, 1 )
-						add( new FormContainer( "editor.tileseteditor.TileDisplay", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-							"$horizontalGroup": "par l {space :0:517:x}"
-							"$verticalGroup": "par l {space :0:0:x}"
+						add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+							"$horizontalGroup": "par l {comp tileDisplay::l::446:x}"
+							"$verticalGroup": "par l {comp tileDisplay::l::386:x}"
 						} ) {
-							name: "tileDisplay"
-							"focusable": false
-							"preferredSize": new java.awt.Dimension( 140, 140 )
+							name: "pnlSelectedTile"
+							"border": new javax.swing.border.TitledBorder( null, "Tile Selected", 4, 1 )
+							add( new FormContainer( "editor.tileseteditor.TileDisplay", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+								"$horizontalGroup": "par l {space :0:446:x}"
+								"$verticalGroup": "par l {space :0:0:x}"
+							} ) {
+								name: "tileDisplay"
+								"focusable": false
+								"preferredSize": new java.awt.Dimension( 140, 140 )
+							} )
+						}, new FormLayoutConstraints( class java.lang.String ) {
+							"value": "right"
 						} )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 4,grow"
+						"value": "cell 0 0"
 					} )
 				}, new FormLayoutConstraints( class java.lang.String ) {
 					"value": "right"
