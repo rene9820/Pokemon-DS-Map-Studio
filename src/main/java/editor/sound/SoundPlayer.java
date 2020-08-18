@@ -23,32 +23,28 @@ import utils.LambdaUtils.VoidInterface;
  * @author Trifindo
  */
 public class SoundPlayer extends Thread {
-
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    private final int BUFFER_SIZE = 128000;
     private String filename;
-    private InputStream inputStream;
     private InputStream bufferedIn;
     private AudioInputStream audioStream;
-    private AudioFormat audioFormat;
     private SourceDataLine sourceLine;
 
     private VoidInterface endAction;
 
+    /**
+     * @param filename the name of the file that is going to be played
+     */
     public void init(String filename, VoidInterface endAction) {
         this.filename = filename;
         this.endAction = endAction;
     }
 
-    /**
-     * @param filename the name of the file that is going to be played
-     */
     private void playSound() {
         try {
             if (filename != null) {
                 try {
-                    inputStream = MainFrame.class.getResourceAsStream(filename);
+                    InputStream inputStream = MainFrame.class.getResourceAsStream(filename);
                     bufferedIn = new BufferedInputStream(inputStream);
                 } catch (Exception e) {
                     System.out.println("ERROR NUMERO 1");
@@ -60,7 +56,7 @@ public class SoundPlayer extends Thread {
                     System.out.println("ERROR NUMERO 2");
                 }
 
-                audioFormat = audioStream.getFormat();
+                AudioFormat audioFormat = audioStream.getFormat();
 
                 DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
                 try {
@@ -73,6 +69,7 @@ public class SoundPlayer extends Thread {
                 sourceLine.start();
 
                 int nBytesRead = 0;
+                int BUFFER_SIZE = 128000;
                 byte[] abData = new byte[BUFFER_SIZE];
                 while (nBytesRead != -1 && running.get()) {
                     try {
@@ -90,7 +87,7 @@ public class SoundPlayer extends Thread {
                 sourceLine.close();
             }
         } catch (Exception ex) {
-
+            ex.printStackTrace();
         } finally {
             endAction.action();
         }
