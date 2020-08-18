@@ -647,7 +647,7 @@ public class MainFrame extends JFrame {
             boolean gridEnabled = mapDisplay.isGridEnabled();
             mapDisplay.disableGridView();
             mapDisplay.display();
-            final BacksoundEditorDialog dialog = new BacksoundEditorDialog(this, true);
+            final BacksoundEditorDialog dialog = new BacksoundEditorDialog(this);
             dialog.init(handler, mapDisplay.getScreenshot());
             dialog.setLocationRelativeTo(this);
             dialog.setVisible(true);
