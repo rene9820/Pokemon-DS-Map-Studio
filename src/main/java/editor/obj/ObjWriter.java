@@ -178,8 +178,8 @@ public class ObjWriter {
     }
 
     private void evaluateTile(int layer, int c, int r, boolean[][] writtenGrid, PrintWriter out) {
-        if ((!writtenGrid[c][r]) && (grid.tileLayers[layer][c][r] != -1)) {
-            Tile tile = tset.get(grid.tileLayers[layer][c][r]).cloneObjData();
+        if ((!writtenGrid[c][r]) && (grid.tileLayers[layer].getTiles()[c][r] != -1)) {
+            Tile tile = tset.get(grid.tileLayers[layer].getTiles()[c][r]).cloneObjData();
             if ((!tile.isXtileable()) && (!tile.isYtileable())) {
                 stretchTile(tile, 1, 1, c, r);
                 writeTile(tile, layer, c, r, out);
@@ -423,12 +423,12 @@ public class ObjWriter {
     }
 
     private boolean sameHeightAndType(int layer, int c1, int r1, int c2, int r2) {
-        return (grid.tileLayers[layer][c1][r1] == grid.tileLayers[layer][c2][r2]
-                && grid.heightLayers[layer][c1][r1] == grid.heightLayers[layer][c2][r2]);
+        return (grid.tileLayers[layer].getTiles()[c1][r1] == grid.tileLayers[layer].getTiles()[c2][r2]
+                && grid.tileLayers[layer].getHeightTiles()[c1][r1] == grid.tileLayers[layer].getHeightTiles()[c2][r2]);
     }
 
     private void writeTile(Tile tile, int layer, int c, int r, PrintWriter out) {
-        displaceTile(tile, c - cols / 2, r - rows / 2, grid.heightLayers[layer][c][r]);
+        displaceTile(tile, c - cols / 2, r - rows / 2, grid.tileLayers[layer].getTiles()[c][r]);
         outTiles.add(tile);
     }
 

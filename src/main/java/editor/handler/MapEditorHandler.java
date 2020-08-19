@@ -307,11 +307,11 @@ public class MapEditorHandler {
     }
     
     public int[][] getActiveTileLayer(){
-        return grid.tileLayers[grid.activeLayer];
+        return grid.tileLayers[grid.activeLayer].getTiles();
     }
     
     public int[][] getActiveHeightLayer(){
-        return grid.heightLayers[grid.activeLayer];
+        return grid.tileLayers[grid.activeLayer].getHeightTiles();
     }
     
     public void setActiveTileLayer(int index){
@@ -332,11 +332,11 @@ public class MapEditorHandler {
     }
     
     public int[][] getTileLayer(int index){
-        return grid.tileLayers[index];
+        return grid.tileLayers[index].getTiles();
     }
     
     public int[][] getHeightLayer(int index){
-        return grid.heightLayers[index];
+        return grid.tileLayers[index].getHeightTiles();
     }
     
     public int getActiveLayerIndex(){
@@ -358,6 +358,10 @@ public class MapEditorHandler {
     public void invertLayerState(int index) {
         renderLayers[index] = !renderLayers[index];
         //mainFrame.repaintMapDisplay();
+    }
+
+    public void removeLayer(int index) {
+        grid.clearLayer(index);
     }
     
     public void updateLayerThumbnail(int index){
@@ -436,9 +440,9 @@ public class MapEditorHandler {
         //Get indices of tiles used in map
         TreeSet<Integer> tileIndicesInGrid = new TreeSet();
         for(int i = 0; i < grid.tileLayers.length; i++){
-            for(int j = 0; j < grid.tileLayers[i].length; j++){
-                for(int k = 0; k < grid.tileLayers[i][j].length; k++){
-                    int tileIndex = grid.tileLayers[i][j][k];
+            for(int j = 0; j < grid.tileLayers[i].getTiles().length; j++){
+                for(int k = 0; k < grid.tileLayers[i].getTiles()[j].length; k++){
+                    int tileIndex = grid.tileLayers[i].getTiles()[j][k];
                     if(tileIndex != -1){
                         tileIndicesInGrid.add(tileIndex);
                     }

@@ -40,8 +40,8 @@ public class SmartGridDisplay extends javax.swing.JPanel {
 
         //gridImage = Utils.loadImageAsResource("/imgs/smartGrid.png");
         this.setPreferredSize(new Dimension(
-                SmartGrid.width * MapGrid.tileSize,
-                SmartGrid.height * MapGrid.tileSize));
+                SmartGrid.width * MapGrid.DEFAULT_TILE_SIZE,
+                SmartGrid.height * MapGrid.DEFAULT_TILE_SIZE));
 
     }
 
@@ -80,8 +80,8 @@ public class SmartGridDisplay extends javax.swing.JPanel {
     private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMousePressed
         if (editable) {
             if (handler.getTileset().size() > 0) {
-                int x = evt.getX() / MapGrid.tileSize;
-                int y = evt.getY() / MapGrid.tileSize;
+                int x = evt.getX() / MapGrid.DEFAULT_TILE_SIZE;
+                int y = evt.getY() / MapGrid.DEFAULT_TILE_SIZE;
                 int gridIndex = y / SmartGrid.height;
                 y %= SmartGrid.height;
                 //System.out.println(x + "  " + y);
@@ -149,7 +149,7 @@ public class SmartGridDisplay extends javax.swing.JPanel {
             }
         } else {
             if (handler.getTileset().size() > 0) {
-                int y = evt.getY() / MapGrid.tileSize;
+                int y = evt.getY() / MapGrid.DEFAULT_TILE_SIZE;
                 int gridIndex = y / SmartGrid.height;
                 if (gridIndex < handler.getSmartGridArray().size() && gridIndex >= 0) {
                     handler.setSmartGridIndexSelected(gridIndex);
@@ -163,8 +163,8 @@ public class SmartGridDisplay extends javax.swing.JPanel {
     private void formMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseMoved
         if (editable) {
             if (handler.getTileset().size() > 0) {
-                int x = evt.getX() / MapGrid.tileSize;
-                int y = evt.getY() / MapGrid.tileSize;
+                int x = evt.getX() / MapGrid.DEFAULT_TILE_SIZE;
+                int y = evt.getY() / MapGrid.DEFAULT_TILE_SIZE;
                 int gridIndex = y / SmartGrid.height;
                 y %= SmartGrid.height;;
                 System.out.println(x + "  " + y);
@@ -194,7 +194,7 @@ public class SmartGridDisplay extends javax.swing.JPanel {
         if (gridImage != null && handler != null) {
             for (int k = 0; k < handler.getSmartGridArray().size(); k++) {
                 g.drawImage(gridImage, 0,
-                        SmartGrid.height * k * MapGrid.tileSize, null);
+                        SmartGrid.height * k * MapGrid.DEFAULT_TILE_SIZE, null);
             }
 
         }
@@ -211,8 +211,8 @@ public class SmartGridDisplay extends javax.swing.JPanel {
                                 BufferedImage img = handler.getTileset().get(indexTile).getThumbnail();
                                 g.drawImage(
                                         img,
-                                        i * MapGrid.tileSize,
-                                        (j + SmartGrid.height * k) * MapGrid.tileSize,
+                                        i * MapGrid.DEFAULT_TILE_SIZE,
+                                        (j + SmartGrid.height * k) * MapGrid.DEFAULT_TILE_SIZE,
                                         null);
                             } catch (Exception ex) {
 
@@ -226,14 +226,14 @@ public class SmartGridDisplay extends javax.swing.JPanel {
             g.setColor(Color.red);
             g.drawRect(
                     0,
-                    index * SmartGrid.height * MapGrid.tileSize,
-                    SmartGrid.width * MapGrid.tileSize - 1,
-                    SmartGrid.height * MapGrid.tileSize - 1);
+                    index * SmartGrid.height * MapGrid.DEFAULT_TILE_SIZE,
+                    SmartGrid.width * MapGrid.DEFAULT_TILE_SIZE - 1,
+                    SmartGrid.height * MapGrid.DEFAULT_TILE_SIZE - 1);
             g.setColor(new Color(255, 100, 100, 50));
             g.fillRect(0,
-                    index * SmartGrid.height * MapGrid.tileSize,
-                    SmartGrid.width * MapGrid.tileSize - 1,
-                    SmartGrid.height * MapGrid.tileSize - 1);
+                    index * SmartGrid.height * MapGrid.DEFAULT_TILE_SIZE,
+                    SmartGrid.width * MapGrid.DEFAULT_TILE_SIZE - 1,
+                    SmartGrid.height * MapGrid.DEFAULT_TILE_SIZE - 1);
         }
 
     }
@@ -242,11 +242,11 @@ public class SmartGridDisplay extends javax.swing.JPanel {
         int numSmartGrids = handler.getSmartGridArray().size();
         System.out.println("Smart grid size: " + numSmartGrids);
         this.setPreferredSize(new Dimension(
-                SmartGrid.width * MapGrid.tileSize,
-                SmartGrid.height * MapGrid.tileSize * numSmartGrids));
+                SmartGrid.width * MapGrid.DEFAULT_TILE_SIZE,
+                SmartGrid.height * MapGrid.DEFAULT_TILE_SIZE * numSmartGrids));
         this.setSize(new Dimension(
-                SmartGrid.width * MapGrid.tileSize,
-                SmartGrid.height * MapGrid.tileSize * numSmartGrids));
+                SmartGrid.width * MapGrid.DEFAULT_TILE_SIZE,
+                SmartGrid.height * MapGrid.DEFAULT_TILE_SIZE * numSmartGrids));
     }
 
     public void init(MapEditorHandler handler, boolean editable) {
@@ -254,8 +254,8 @@ public class SmartGridDisplay extends javax.swing.JPanel {
         this.editable = editable;
 
         this.setPreferredSize(new Dimension(
-                SmartGrid.width * MapGrid.tileSize,
-                SmartGrid.height * MapGrid.tileSize * handler.getSmartGridArray().size()));
+                SmartGrid.width * MapGrid.DEFAULT_TILE_SIZE,
+                SmartGrid.height * MapGrid.DEFAULT_TILE_SIZE * handler.getSmartGridArray().size()));
     }
 
 }

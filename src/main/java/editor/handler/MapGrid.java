@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+
+import models.Layer;
 import tileset.Tile;
 import tileset.Tileset;
 import utils.Utils;
@@ -40,15 +42,16 @@ public class MapGrid {
 
     public static final int cols = 32;
     public static final int rows = 32;
-    public static final int tileSize = 16;
-    public static final int width = cols * tileSize;
-    public static final int height = rows * tileSize;
+    public static final int DEFAULT_TILE_SIZE = 16;
+    public static final int width = cols * DEFAULT_TILE_SIZE;
+    public static final int height = rows * DEFAULT_TILE_SIZE;
     public static final float gridTileSize = 1.0f;
 
     public int activeLayer = 0;
     public static final int numLayers = 8;
-    public int[][][] tileLayers = new int[numLayers][cols][rows];
-    public int[][][] heightLayers = new int[numLayers][cols][rows];
+
+    public Layer[] tileLayers = new Layer[numLayers];
+    // public int[][][] heightLayers = new int[numLayers][cols][rows];
 
     private int[][] tileLayerCopy = null;
     private int[][] heightLayerCopy = null;
@@ -63,11 +66,7 @@ public class MapGrid {
 
         for (int k = 0; k < numLayers; k++) {
             //int[][] tileGrid = new int[cols][rows];
-            for (int i = 0; i < cols; i++) {
-                for (int j = 0; j < rows; j++) {
-                    tileLayers[k][i][j] = -1;
-                }
-            }
+            tileLayers[k] = new Layer(rows, cols);
         }
 
     }
@@ -85,14 +84,12 @@ public class MapGrid {
         String filename = Utils.removeExtensionFromPath(new File(path).getName());
         out.println(filename + "." + Tileset.fileExtension);
 
-        for (int[][] tLayer : tileLayers) {
+        for (Layer layer : tileLayers) {
             out.println(tileGridTag);
-            printMatrixInFile(out, tLayer); //Todo change this
-        }
+            printMatrixInFile(out, layer.getTiles()); //Todo change this
 
-        for (int[][] hLayer : heightLayers) {
             out.println(heightGridTag);
-            printMatrixInFile(out, hLayer); //Todo change this
+            printMatrixInFile(out, layer.getHeightTiles()); //Todo change this
         }
 
         out.close();
@@ -113,10 +110,10 @@ public class MapGrid {
                 tilesetFilePath = folderPath + File.separator + br.readLine();
                 System.out.println("Tileset path: " + tilesetFilePath);
             } else if (line.startsWith(tileGridTag)) {
-                loadMatrixFromFile(br, tileLayers[numTileLayersRead]);
+                loadMatrixFromFile(br, tileLayers[numTileLayersRead].getTiles());
                 numTileLayersRead++;
             } else if (line.startsWith(heightGridTag)) {
-                loadMatrixFromFile(br, heightLayers[numHeightLayersRead]);
+                loadMatrixFromFile(br, tileLayers[numHeightLayersRead].getHeightTiles());
                 numHeightLayersRead++;
             }
         }
@@ -154,22 +151,8 @@ public class MapGrid {
     }
 
     public void replaceTilesUsingIndices(int[] indices) {
-        int[][][] oldTileLayers = cloneTileLayers();
-        for (int i = 0; i < numLayers; i++) {
-            for (int j = 0; j < cols; j++) {
-                for (int k = 0; k < rows; k++) {
-                    int index = oldTileLayers[i][j][k];
-                    try {
-                        if (index == -1) {
-                            tileLayers[i][j][k] = -1;
-                        } else {
-                            tileLayers[i][j][k] = indices[index];
-                        }
-                    } catch (Exception ex) {
-                        tileLayers[i][j][k] = -1;
-                    }
-                }
-            }
+        for (Layer layer : tileLayers) {
+            layer.replaceTiles(indices);
         }
     }
 
@@ -178,7 +161,7 @@ public class MapGrid {
             for (int j = 0; j < cols; j++) {
                 for (int k = 0; k < rows; k++) {
                     if (oldTileLayers[i][j][k] == oldIndex) {
-                        tileLayers[i][j][k] = newIndex;
+                        tileLayers[i].getTiles()[j][k] = newIndex;
                     }
                 }
             }
@@ -189,85 +172,46 @@ public class MapGrid {
         int[][][] newTileLayers = new int[numLayers][cols][rows];
         for (int i = 0; i < numLayers; i++) {
             for (int j = 0; j < cols; j++) {
-                System.arraycopy(tileLayers[i][j], 0, newTileLayers[i][j], 0, rows);
+                System.arraycopy(tileLayers[i].getTiles()[j], 0, newTileLayers[i][j], 0, rows);
             }
         }
         return newTileLayers;
     }
 
     public void removeTileFromMap(int tileIndex) {
-        for (int i = 0; i < numLayers; i++) {
-            removeTileFromLayer(i, tileIndex);
+        for (Layer layer : tileLayers) {
+            layer.removeTile(tileIndex);
         }
     }
 
     public void removeTileFromLayer(int layerIndex, int tileIndex) {
-        for (int i = 0; i < cols; i++) {
-            for (int j = 0; j < rows; j++) {
-                if (tileLayers[layerIndex][i][j] == tileIndex) {
-                    tileLayers[layerIndex][i][j] = -1;
-                }
-            }
-        }
+        tileLayers[layerIndex].removeTile(tileIndex);
     }
 
     public void clearLayer(int layerIndex) {
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                tileLayers[layerIndex][i][j] = -1;
-                heightLayers[layerIndex][i][j] = 0;
-            }
-        }
+        tileLayers[layerIndex].clearLayer();
     }
 
     public void clearAllLayers() {
-        for (int i = 0; i < numLayers; i++) {
-            clearLayer(i);
+        for (Layer layer : tileLayers) {
+            layer.clearLayer();
         }
     }
 
     public void moveTilesUp(int layerIndex) {
-        for (int i = 0; i < (cols - 0); i++) {
-            for (int j = (rows - 1); j > 0; j--) {
-                tileLayers[layerIndex][i][j] = tileLayers[layerIndex][i][j - 1];
-                heightLayers[layerIndex][i][j] = heightLayers[layerIndex][i][j - 1];
-            }
-            tileLayers[layerIndex][i][0] = -1;
-            heightLayers[layerIndex][i][0] = 0;
-        }
+        tileLayers[layerIndex].shiftLayer(0, -1);
     }
 
     public void moveTilesDown(int layerIndex) {
-        for (int i = 0; i < (cols - 0); i++) {
-            for (int j = 0; j < (rows - 1); j++) {
-                tileLayers[layerIndex][i][j] = tileLayers[layerIndex][i][j + 1];
-                heightLayers[layerIndex][i][j] = heightLayers[layerIndex][i][j + 1];
-            }
-            tileLayers[layerIndex][i][rows - 1] = -1;
-            heightLayers[layerIndex][i][rows - 1] = 0;
-        }
+        tileLayers[layerIndex].shiftLayer(0, 1);
     }
 
     public void moveTilesRight(int layerIndex) {
-        for (int i = 0; i < (rows - 0); i++) {
-            for (int j = (cols - 1); j > 0; j--) {
-                tileLayers[layerIndex][j][i] = tileLayers[layerIndex][j - 1][i];
-                heightLayers[layerIndex][j][i] = heightLayers[layerIndex][j - 1][i];
-            }
-            tileLayers[layerIndex][0][i] = -1;
-            heightLayers[layerIndex][0][i] = 0;
-        }
+        tileLayers[layerIndex].shiftLayer(-1, 0);
     }
 
     public void moveTilesLeft(int layerIndex) {
-        for (int i = 0; i < (rows - 0); i++) {
-            for (int j = 0; j < (cols - 1); j++) {
-                tileLayers[layerIndex][j][i] = tileLayers[layerIndex][j + 1][i];
-                heightLayers[layerIndex][j][i] = heightLayers[layerIndex][j + 1][i];
-            }
-            tileLayers[layerIndex][rows - 1][i] = -1;
-            heightLayers[layerIndex][rows - 1][i] = 0;
-        }
+        tileLayers[layerIndex].shiftLayer(1, 0);
     }
 
     private void printMatrixInFile(PrintWriter out, Integer[][] matrix) {
@@ -335,11 +279,11 @@ public class MapGrid {
             }
         }
 
-        Utils.floodFillMatrix(tileLayers[activeLayer], mask, x, y, value, tileWidth, tileHeight);
+        Utils.floodFillMatrix(tileLayers[activeLayer].getTiles(), mask, x, y, value, tileWidth, tileHeight);
     }
 
     public void floodFillHeightGrid(int x, int y, int value) {
-        Utils.floodFillMatrix(heightLayers[activeLayer], x, y, value);
+        Utils.floodFillMatrix(tileLayers[activeLayer].getHeightTiles(), x, y, value);
     }
 
     public void clearCopyLayer() {
@@ -354,13 +298,13 @@ public class MapGrid {
 
     public void pasteTileLayer() {
         if (tileLayerCopy != null) {
-            tileLayers[activeLayer] = cloneLayer(tileLayerCopy);
+            tileLayers[activeLayer].setTiles(tileLayerCopy);
         }
     }
 
     public void pasteHeightLayer() {
         if (heightLayerCopy != null) {
-            heightLayers[activeLayer] = cloneLayer(heightLayerCopy);
+            tileLayers[activeLayer].setHeightTiles(heightLayerCopy);
         }
     }
 
@@ -381,19 +325,19 @@ public class MapGrid {
     }
 
     public int[][] cloneTileLayer(int index) {
-        return cloneLayer(tileLayers[index]);
+        return cloneLayer(tileLayers[index].getTiles());
     }
 
     public int[][] cloneHeightLayer(int index) {
-        return cloneLayer(heightLayers[index]);
+        return cloneLayer(tileLayers[index].getHeightTiles());
     }
 
     public void setTileLayer(int index, int[][] tileLayer) {
-        this.tileLayers[index] = tileLayer;
+        this.tileLayers[index].setTiles(tileLayer);
     }
 
     public void setHeightLayer(int index, int[][] heightLayer) {
-        this.heightLayers[index] = heightLayer;
+        this.tileLayers[index].setHeightTiles(heightLayer);
     }
 
 }

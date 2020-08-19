@@ -7,14 +7,10 @@ package editor.layerselector;
 
 import editor.handler.MapEditorHandler;
 import editor.handler.MapGrid;
-import java.awt.BasicStroke;
+
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import javax.swing.SwingUtilities;
 import utils.Utils;
@@ -36,8 +32,8 @@ public class LayerSelector extends javax.swing.JPanel {
     public LayerSelector() {
         initComponents();
 
-        setPreferredSize(new Dimension(MapGrid.tileSize,
-                MapGrid.tileSize * MapGrid.numLayers));
+        setPreferredSize(new Dimension(MapGrid.DEFAULT_TILE_SIZE,
+                MapGrid.DEFAULT_TILE_SIZE * MapGrid.numLayers));
 
     }
 
@@ -70,7 +66,7 @@ public class LayerSelector extends javax.swing.JPanel {
 
     private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMousePressed
         if (handler != null) {
-            int index = evt.getY() / MapGrid.tileSize;
+            int index = evt.getY() / MapGrid.DEFAULT_TILE_SIZE;
             if (index >= 0 && index < MapGrid.numLayers) {
                 if (SwingUtilities.isLeftMouseButton(evt)) {
                     handler.setActiveTileLayer(index);
@@ -100,14 +96,14 @@ public class LayerSelector extends javax.swing.JPanel {
                 } else {
                     img = layersOffImgs[i];
                 }
-                g.drawImage(img, 0, i * MapGrid.tileSize, null);
+                g.drawImage(img, 0, i * MapGrid.DEFAULT_TILE_SIZE, null);
             }
             g.setColor(new Color(255, 100, 100, 100));
-            g.fillRect(0, handler.getActiveLayerIndex() * MapGrid.tileSize,
-                    MapGrid.tileSize - 1, MapGrid.tileSize - 1);
+            g.fillRect(0, handler.getActiveLayerIndex() * MapGrid.DEFAULT_TILE_SIZE,
+                    MapGrid.DEFAULT_TILE_SIZE - 1, MapGrid.DEFAULT_TILE_SIZE - 1);
             g.setColor(Color.red);
-            g.drawRect(0, handler.getActiveLayerIndex() * MapGrid.tileSize,
-                    MapGrid.tileSize - 1, MapGrid.tileSize - 1);
+            g.drawRect(0, handler.getActiveLayerIndex() * MapGrid.DEFAULT_TILE_SIZE,
+                    MapGrid.DEFAULT_TILE_SIZE - 1, MapGrid.DEFAULT_TILE_SIZE - 1);
 
         }
     }

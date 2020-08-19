@@ -87,7 +87,7 @@ public class ThumbnailLayerSelector extends javax.swing.JPanel {
                     }
                     handler.setActiveTileLayer(index);
                 } else if (SwingUtilities.isRightMouseButton(evt)) {
-                    handler.invertLayerState(index);
+                    handler.removeLayer(index);
                 } else if (SwingUtilities.isMiddleMouseButton(evt)) {
                     handler.setOnlyActiveTileLayer(index);
                 }
@@ -145,7 +145,7 @@ public class ThumbnailLayerSelector extends javax.swing.JPanel {
         Graphics g = imgLayer.getGraphics();
         g.setColor(backColor);
         g.fillRect(0, 0, layerWidth, layerHeight);
-        int[][] grid = handler.getGrid().tileLayers[index];
+        int[][] grid = handler.getGrid().tileLayers[index].getTiles();
         for (int i = 0; i < MapGrid.cols; i++) {
             for (int j = 0; j < MapGrid.rows; j++) {
                 int tileIndex = grid[i][j];
